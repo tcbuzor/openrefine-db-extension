@@ -1,0 +1,350 @@
+/*
+
+Copyright 2011, Google Inc.
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are
+met:
+
+ * Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above
+copyright notice, this list of conditions and the following disclaimer
+in the documentation and/or other materials provided with the
+distribution.
+ * Neither the name of Google Inc. nor the names of its
+contributors may be used to endorse or promote products derived from
+this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,           
+DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY           
+THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+ */
+
+Refine.DatabaseSourceUI = function(controller) {
+  this._controller = controller;
+};
+
+Refine.DatabaseSourceUI.prototype.attachUI = function(body) {
+  this._body = body;
+  
+  this._body.html(DOM.loadHTML("database", "scripts/index/database-import-form.html"));
+  this._elmts = DOM.bind(this._body);
+  var self = this;
+  
+  $('#database-title').text($.i18n._("database-import")["title"]); 
+  $('#connectionNameLabel').html($.i18n._("database-source")["connectionNameLabel"]);
+  $('#databaseTypeLabel').html($.i18n._("database-source")["databaseTypeLabel"]);
+  $('#databaseHostLabel').text($.i18n._("database-source")["databaseHostLabel"]);
+  $('#databasePortLabel').text($.i18n._("database-source")["databasePortLabel"]);
+  $('#databaseUserLabel').text($.i18n._("database-source")["databaseUserLabel"]);
+  $('#databasePasswordLabel').text($.i18n._("database-source")["databasePasswordLabel"]);
+  $('#databaseNameLabel').text($.i18n._("database-source")["databaseNameLabel"]);
+  $('#databaseSchemaLabel').text($.i18n._("database-source")["databaseSchemaLabel"]);
+  $('#databaseTestButton').text($.i18n._("database-source")["databaseTestButton"]);
+  $('#databaseSaveButton').text($.i18n._("database-source")["databaseSaveButton"]);
+  $('#databaseConnectButton').text($.i18n._("database-source")["databaseConnectButton"]);
+  $('#newConnectionButtonDiv').text($.i18n._("database-source")["newConnectionButtonDiv"]);
+  $('#savedConnectionSpan').text($.i18n._("database-source")["savedConnectionSpan"]);
+ 
+  
+  this._elmts.newConnectionButton.click(function(evt) {
+	  self._resetDatabaseImportForm();
+	  self._body.find('.newConnectionDiv').show();  
+	  self._body.find('.sqlEditorDiv').hide();
+	 
+  });
+  
+  
+  this._elmts.databaseTypeSelect.change(function(event) {
+	  var type = $( "#databaseTypeSelect" ).val(); 
+	  if(type === "postgresql"){ 
+		  $( "#databaseUser" ).val("postgres");
+		  $( "#databasePort" ).val("5432");	  
+	  }else if(type === "mysql"){	  
+		  $( "#databaseUser" ).val("root");
+		  $( "#databasePort" ).val("3306");	  
+	  }else if(type === "mariadb"){
+		  $( "#databaseUser" ).val("root");
+     	  $( "#databasePort" ).val("3306");	  
+	  }else{
+		  $( "#databaseUser" ).val("root");
+		  $( "#databasePort" ).val("3306");
+	  }
+  });
+  
+  this._elmts.testDatabaseButton.click(function(evt) {
+	  
+	  	if(self._validateNewConnectionForm() == true){
+	 	    self._testDatabaseConnect(self._getConnectionInfo());
+	  	}
+	   
+   });
+  
+  this._elmts.databaseConnectButton.click(function(evt) {
+	  
+	  if(self._validateNewConnectionForm() == true){
+	 	    self._connect(self._getConnectionInfo());
+	  }
+
+   
+ });
+  
+ this._elmts.saveConnectionButton.click(function(evt) {
+	  
+	   if(self._validateNewConnectionForm() == true){
+		   	var connectionNameInput = $.trim(self._elmts.connectionNameInput[0].value);
+		    if (connectionNameInput.length === 0) {
+		        window.alert($.i18n._('database-source')["alert-connection-name"]);   
+		    } else{
+		    		self._saveConnection(self._getConnectionInfo());
+		    }
+	 	    
+	   }
+
+ });
+  
+  this._elmts.executeQueryButton.click(function(evt) {
+	    var jdbcQueryInfo = {};
+	    jdbcQueryInfo.connectionName = $( "#currentConnectionNameInput" ).val();
+	    jdbcQueryInfo.databaseType = $( "#currentDatabaseTypeInput" ).val();
+	    jdbcQueryInfo.databaseServer = $( "#currentDatabaseHostInput" ).val();
+	    jdbcQueryInfo.databasePort = $( "#currentDatabasePortInput" ).val();  
+	    jdbcQueryInfo.databaseUser = $( "#currentDatabaseUserInput" ).val();
+	    jdbcQueryInfo.databasePassword = $( "#currentDatabasePasswordInput" ).val();
+	    jdbcQueryInfo.initialDatabase = $( "#currentInitialDatabaseInput" ).val();
+	    jdbcQueryInfo.query = $.trim($( "#queryTextArea" ).val()); 
+	   
+	    if(jdbcQueryInfo.query && jdbcQueryInfo.query.length > 0 ) {
+	    	   self._executeQuery(jdbcQueryInfo);
+	    }else{
+	    	  window.alert($.i18n._('database-source')["alert-query"]);
+	    }
+	    
+  });
+
+  this._elmts.editConnectionButton.click(function(evt) {
+	  
+	  if(self._validateNewConnectionForm() == true){
+		   	var connectionNameInput = $.trim(self._elmts.connectionNameInput[0].value);
+		    if (connectionNameInput.length === 0) {
+		        window.alert($.i18n._('database-source')["alert-connection-name"]);   
+		    } else{
+		    		self._editConnection(self._getConnectionInfo());
+		    }
+	 	    
+	   }
+	
+ });
+  
+ this._elmts.cancelEditConnectionButton.click(function(evt) {
+	 self._resetDatabaseImportForm();
+	    
+ });
+  
+  //load saved connections from settings file in user home directory
+  self._loadSavedConnections();
+ 
+};//end Refine.createUI
+
+
+Refine.DatabaseSourceUI.prototype.focus = function() {
+};
+
+
+Refine.DatabaseSourceUI.prototype._editConnection = function(query) {	
+	
+};
+
+
+
+Refine.DatabaseSourceUI.prototype._executeQuery = function(jdbcQueryInfo) {
+	var self = this;
+	self._controller.startImportingDocument(jdbcQueryInfo);
+}
+
+Refine.DatabaseSourceUI.prototype._saveConnection = function(jdbcConnectionInfo) {	
+	var self = this;
+	$.post(
+	  "command/database/saved-connection",
+	  jdbcConnectionInfo,
+	  function(settings) {
+		  if(settings){
+			  
+			  self._elmts.menuListUl.empty();
+			  var items = [];
+			  $.each(settings.savedConnections,function(index,savedConnection){
+												   
+				  items.push('<li class="context-menu-one pure-menu-item"><a href="#" class="pure-menu-link">'
+							+ savedConnection.connectionName
+							+ '</a></li>');
+			   })
+			  
+			  self._elmts.menuListUl.append(items.join(''));
+		  }
+	
+	  },
+	  "json"
+	);
+
+};
+
+Refine.DatabaseSourceUI.prototype._loadSavedConnections = function() {	
+	var self = this;
+	$.get(
+	  "command/database/saved-connection",
+	  null,
+	  function(settings) {
+		  if(settings){
+			  //window.alert('settings ' + settings);
+			  self._elmts.menuListUl.empty();
+			  var items = [];
+			  $.each(settings.savedConnections,function(index,savedConnection){
+					  
+				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link">'
+					+ '<span class="context-menu-one context-menu-text" >' + savedConnection.connectionName + '</span>'
+					+ '</a></li>');
+			   })
+			 
+			  self._elmts.menuListUl.append(items.join(''));
+		  }
+		
+	  },
+	  "json"
+	);
+
+};
+
+Refine.DatabaseSourceUI.prototype._testDatabaseConnect = function(jdbcConnectionInfo) {
+	
+	var self = this;
+	$.post(
+	  "command/database/test-connect",
+	  jdbcConnectionInfo,
+	  function(jdbcConnectionResult) {
+		  if(jdbcConnectionResult && jdbcConnectionResult.connectionResult == true){
+			  window.alert("Test Connection Succeeded!");
+		  }else{
+			  window.alert("Unable to establish connection to database");
+		  }
+	  		
+	  },
+	  "json"
+	).fail(function( jqXhr, textStatus, errorThrown ){
+        alert( textStatus + ':' + errorThrown );
+    });
+};
+
+Refine.DatabaseSourceUI.prototype._connect = function(jdbcConnectionInfo) {
+	
+	var self = this;
+	$.post(
+	  "command/database/connect",
+	  jdbcConnectionInfo,
+	  function(databaseInfo) {
+		  
+		  if(databaseInfo){
+			  $( "#currentConnectionNameInput" ).val(jdbcConnectionInfo.connectionName);
+			  $( "#currentDatabaseTypeInput" ).val(jdbcConnectionInfo.databaseType);
+			  $( "#currentDatabaseUserInput" ).val(jdbcConnectionInfo.databaseUser);
+			  $( "#currentDatabasePasswordInput" ).val(jdbcConnectionInfo.databasePassword);
+			  $( "#currentDatabaseHostInput" ).val(jdbcConnectionInfo.databaseServer);
+			  $( "#currentDatabasePortInput" ).val(jdbcConnectionInfo.databasePort);
+			  $( "#currentInitialDatabaseInput" ).val(jdbcConnectionInfo.initialDatabase);
+			  var connectionParam = "Connection URL : "
+				  	+ "jdbc:"
+					+ databaseConfig.databaseType + "://"
+					+ databaseConfig.databaseServer + ":"
+					+ databaseConfig.databasePort + "/"
+					+ databaseConfig.initialDatabase;
+			  $( "#connectionParameterSpan" ).val(connectionParam);
+			  self._body.find('.newConnectionDiv').hide();
+      		  self._body.find('.sqlEditorDiv').show();
+			
+		  }else{
+			  window.alert("Unable to establish connection to database");
+			  return;
+		  }
+	  		
+	  },
+	  "json"
+	).fail(function( jqXhr, textStatus, errorThrown ){
+        alert( textStatus + ':' + errorThrown );
+    });
+
+};
+
+Refine.DatabaseSourceUI.prototype._getConnectionInfo = function() {
+	 	var self = this;
+	    var jdbcConnectionInfo = {};
+ 	    jdbcConnectionInfo.connectionName = $.trim(self._elmts.connectionNameInput[0].value);
+ 	    jdbcConnectionInfo.databaseType = $.trim(self._elmts.databaseTypeSelect[0].value);
+ 	    jdbcConnectionInfo.databaseServer = $.trim(self._elmts.databaseHostInput[0].value);
+ 	    jdbcConnectionInfo.databasePort = $.trim(self._elmts.databasePortInput[0].value);
+ 	    jdbcConnectionInfo.databaseUser = $.trim(self._elmts.databaseUserInput[0].value);
+ 	    jdbcConnectionInfo.databasePassword = $.trim(self._elmts.databasePasswordInput[0].value); 
+ 	    jdbcConnectionInfo.initialDatabase = $.trim(self._elmts.initialDatabaseInput[0].value);
+ 	    jdbcConnectionInfo.initialSchema = $.trim(self._elmts.initialSchemaInput[0].value);
+ 	    return jdbcConnectionInfo;
+	
+}
+
+Refine.DatabaseSourceUI.prototype._validateNewConnectionForm = function() {
+	
+	    var self = this;
+	    var connectionNameInput = $.trim(self._elmts.connectionNameInput[0].value);
+	    var databaseTypeSelect = $.trim(self._elmts.databaseTypeSelect[0].value);
+	    var databaseHostInput = $.trim(self._elmts.databaseHostInput[0].value);
+	    var databasePortInput = $.trim(self._elmts.databasePortInput[0].value);
+	    var databaseUserInput = $.trim(self._elmts.databaseUserInput[0].value);
+	    var databasePasswordInput = $.trim(self._elmts.databasePasswordInput[0].value);   
+	    var initialDatabaseInput = $.trim(self._elmts.initialDatabaseInput[0].value);
+	    var initialSchemaInput = $.trim(self._elmts.initialSchemaInput[0].value);
+	    
+	    if (databaseHostInput.length === 0) {
+	        window.alert($.i18n._('database-source')["alert-server"]);
+	        return false;
+	    }else if(databasePortInput.length === 0){
+	    		window.alert($.i18n._('database-source')["alert-port"]);
+	    		return false;
+	    }else if(databaseUserInput.length === 0){
+	    		window.alert($.i18n._('database-source')["alert-user"]);
+	    		return false;
+	    }else if(initialDatabaseInput.length === 0){
+	    		window.alert($.i18n._('database-source')["alert-initial-database"]);
+	    		return false;
+	    }
+	    else{
+	    		return true;
+
+	    }    
+	
+	   return true;
+};	
+
+Refine.DatabaseSourceUI.prototype._resetDatabaseImportForm = function() {	
+	var self = this;
+	$( "#connectionName" ).val("127.0.0.1");
+	$( "#databaseTypeSelect" ).val("mysql");
+	$( "#databaseHost" ).val("127.0.0.1");
+	$( "#databasePort" ).val("3306");
+	$( "#databaseUser" ).val("root");
+	$( "#databasePassword" ).val("");
+	$( "#initialDatabase" ).val("");
+	$( "#initialSchema" ).val("");
+	
+	$( "#editConnectionControlDiv" ).hide();
+	$( "#newConnectionControlDiv" ).show();
+	$('#connectionName').removeAttr('readonly');
+	
+};
