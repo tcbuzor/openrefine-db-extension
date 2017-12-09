@@ -1,11 +1,11 @@
 
-package com.google.refine.extension.database.mysql;
+package com.google.refine.extension.database.pgsql;
 
 import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
-public class MySQLDatabaseServiceTest {
+public class PgSQLDatabaseServiceTest {
 
     @BeforeTest
     public void beforeTest() {
@@ -14,7 +14,7 @@ public class MySQLDatabaseServiceTest {
     @Test
     public void testGetInstance() {
 
-        MySQLDatabaseService instance = MySQLDatabaseService.getInstance();
+        PgSQLDatabaseService instance = PgSQLDatabaseService.getInstance();
         Assert.assertNotNull(instance, "Instance Cannot cbe Null");
     }
 

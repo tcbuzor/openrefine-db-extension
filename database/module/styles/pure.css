@@ -1347,7 +1347,7 @@ since IE8 won't execute CSS that contains a CSS3 selector.
 /* scrollable menus */
 .pure-menu-scrollable {
     overflow-y: scroll;
-    overflow-x: hidden;
+    overflow-x: scroll;
 }
 
 .pure-menu-scrollable .pure-menu-list {

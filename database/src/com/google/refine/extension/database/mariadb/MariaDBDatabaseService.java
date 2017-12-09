@@ -237,5 +237,12 @@ public class MariaDBDatabaseService extends DatabaseService {
                     + ((port == 0) ? "" : (":" + port)) + "/" + dbConfig.getDatabaseName() + "?useSSL=" + dbConfig.isUseSSL();
         
     }
+
+    @Override
+    public Connection getConnection(DatabaseConfiguration dbConfig)
+            throws DatabaseServiceException {
+        // TODO Auto-generated method stub
+        return MariaDBConnectionManager.getConnection(dbConfig, true);
+    }
   
 }

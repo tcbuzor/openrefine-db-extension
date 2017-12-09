@@ -33,7 +33,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 $(function(){
     $.contextMenu({
         selector: '.context-menu-one', 
-        trigger: 'right',
+        trigger: 'left',
         build: function($trigger, e) {
    
             return {
@@ -72,9 +72,25 @@ var DatabaseExtension = {};
 
 DatabaseExtension.currentConnection = {};
 
+DatabaseExtension.handleSavedConnectionClicked = function(menuKey, connectionName) {
+	var jdbcConnectionInfo = {};
+	jdbcConnectionInfo.connectionName = connectionName;
+	
+	if(menuKey == "edit"){
+		DatabaseExtension.handleEditConnectionClicked(connectionName);
+		
+	}else if(menuKey == "delete"){
+		DatabaseExtension.handleDeleteConnectionClicked(connectionName);
+		
+	}else if(menuKey == "connect"){
+		DatabaseExtension.handleConnectClicked(connectionName);
+	}
+
+};
+
+
 DatabaseExtension.handleConnectClicked = function(connectionName) {
-	 
-	// window.alert("handleConnectClicked!" + connectionName);
+	
 	 $.get(
    		  "command/database/saved-connection" + '?' + $.param({"connectionName": connectionName}),
    		  null,
@@ -89,12 +105,11 @@ DatabaseExtension.handleConnectClicked = function(connectionName) {
    				  databaseConfig.databaseType = savedConfig.databaseType;
    				  databaseConfig.databaseServer = savedConfig.databaseHost;
    				  databaseConfig.databasePort = savedConfig.databasePort;
-   				//  window.alert("savedConfig.databasePort!" + savedConfig.databasePort);
    				  databaseConfig.databaseUser = savedConfig.databaseUser;
    				  databaseConfig.databasePassword = savedConfig.databasePassword;
    				  databaseConfig.initialDatabase = savedConfig.databaseName;
    				  databaseConfig.initialSchema = savedConfig.databaseSchema;
-   				 // window.alert("databaseConfig!" + databaseConfig);
+   				 
 	   				 $.post(
 	   			   		  "command/database/connect",
 	   			   		   databaseConfig,
@@ -117,9 +132,8 @@ DatabaseExtension.handleConnectClicked = function(connectionName) {
 										+ databaseConfig.databaseServer + ":"
 										+ databaseConfig.databasePort + "/"
 										+ databaseConfig.initialDatabase;
-								  //alert("connectionParam::" + connectionParam);
+								 
 								  $( "#connectionParameterSpan" ).text(connectionParam);
-	   			   			  
 	   			   				  $( "#newConnectionDiv" ).hide();
 	   			   				  $( "#sqlEditorDiv" ).show();
 	   			   				 
@@ -129,15 +143,45 @@ DatabaseExtension.handleConnectClicked = function(connectionName) {
 	   			   		  		
 	   			   		  },
 	   			   		  "json"
-	   			   );
+	   			   ).fail(function( jqXhr, textStatus, errorThrown ){
+	   		        alert( textStatus + ':' + errorThrown );
+	   		    });
    				
    			  }
    		  		
    		  },
    		  "json"
    );
-
 };
+
+DatabaseExtension.handleDeleteConnectionClicked = function(connectionName) {
+	$.ajax({
+	    url: 'command/database/saved-connection' + '?' + $.param({"connectionName": connectionName}),
+	    type: 'DELETE',
+	    contentType:'application/json',
+	    data: null,
+	    success: function(settings) {
+	    	 if(settings){
+				  
+				  $( "#menuListUl" ).empty();
+				  var items = [];
+				  $.each(settings.savedConnections,function(index,savedConnection){
+						  
+//					  items.push('<li class="context-menu-one pure-menu-item"><a href="#" class="pure-menu-link">'
+//								+ savedConnection.connectionName
+//								+ '</a></li>');
+					  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
+								+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+								+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
+				   })
+				  
+				  $( "#menuListUl" ).append(items.join(''));
+			  }
+	    }
+	}).fail(function( jqXhr, textStatus, errorThrown ){
+        alert( textStatus + ':' + errorThrown );
+    });
+}
 
 DatabaseExtension.handleEditConnectionClicked = function(connectionName) {
 	
@@ -148,22 +192,21 @@ DatabaseExtension.handleEditConnectionClicked = function(connectionName) {
 	   			  
 	   			  if(savedDatabaseConfig){
 	   				
-	   				var savedConfig = savedDatabaseConfig.savedConnections[0];
-	   				$( "#connectionName" ).val(savedConfig.connectionName);
-	   				alert(savedConfig.databaseType);
-	   				$( "#databaseTypeSelect" ).val(savedConfig.databaseType);
-	   				$( "#databaseHost" ).val(savedConfig.databaseHost);
-	   				$( "#databasePort" ).val(savedConfig.databasePort);
-	   				$( "#databaseUser" ).val(savedConfig.databaseUser);
-	   				$( "#databasePassword" ).val(savedConfig.databasePassword);
-	   				$( "#initialDatabase" ).val(savedConfig.databaseName);
-	   				$( "#initialSchema" ).val(savedConfig.databaseSchema);
-	   				
-	   				$( "#editConnectionControlDiv" ).show();
-	   				$( "#newConnectionControlDiv" ).hide();
-	   			    $("#connectionName").attr('readonly', 'readonly');
-	   				
-		   			
+		   				var savedConfig = savedDatabaseConfig.savedConnections[0];
+		   				$( "#connectionName" ).val(savedConfig.connectionName);
+		   				$( "#databaseTypeSelect" ).val(savedConfig.databaseType);
+		   				$( "#databaseHost" ).val(savedConfig.databaseHost);
+		   				$( "#databasePort" ).val(savedConfig.databasePort);
+		   				$( "#databaseUser" ).val(savedConfig.databaseUser);
+		   				$( "#databasePassword" ).val(savedConfig.databasePassword);
+		   				$( "#initialDatabase" ).val(savedConfig.databaseName);
+		   				$( "#initialSchema" ).val(savedConfig.databaseSchema);
+		   				$( "#newConnectionControlDiv" ).hide();
+		   				$( "#editConnectionControlDiv" ).show();
+		   				$( "#newConnectionDiv" ).show();
+		   				$('#sqlEditorDiv').hide();
+		   			    $("#connectionName").attr('readonly', 'readonly');
+	   			
 	   			  }
 	   		  		
 	   		  },
@@ -171,40 +214,4 @@ DatabaseExtension.handleEditConnectionClicked = function(connectionName) {
 	   );
 
 }
-
-DatabaseExtension.handleSavedConnectionClicked = function(menuKey, connectionName) {
-	var jdbcConnectionInfo = {};
-	jdbcConnectionInfo.connectionName = connectionName;
-	
-	if(menuKey == "edit"){
-		DatabaseExtension.handleEditConnectionClicked(connectionName);
-		
-	}else if(menuKey == "delete"){
-		$.ajax({
-		    url: 'command/database/saved-connection' + '?' + $.param({"connectionName": connectionName}),
-		    type: 'DELETE',
-		    contentType:'application/json',
-		    data: jdbcConnectionInfo,
-		    success: function(settings) {
-		    	 if(settings){
-					  
-					  $( "#menuListUl" ).empty();
-					  var items = [];
-					  $.each(settings.savedConnections,function(index,savedConnection){
-							  
-						  items.push('<li class="context-menu-one pure-menu-item"><a href="#" class="pure-menu-link">'
-									+ savedConnection.connectionName
-									+ '</a></li>');
-					   })
-					  
-					  $( "#menuListUl" ).append(items.join(''));
-				  }
-		    }
-		});
-		
-	}else if(menuKey == "connect"){
-		DatabaseExtension.handleConnectClicked(connectionName);
-	}
-
-};
 

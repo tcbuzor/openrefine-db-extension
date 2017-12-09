@@ -14,7 +14,7 @@ import com.google.refine.extension.database.SQLType;
 
 public class PgSQLConnectionManager {
 
-    static final Logger logger = LoggerFactory.getLogger("MariaDBConnectionManager");
+    static final Logger logger = LoggerFactory.getLogger("PgSQLConnectionManager");
     private Connection connection; 
     private SQLType type;
 
@@ -138,7 +138,7 @@ public class PgSQLConnectionManager {
             if (connectionManager.connection != null  && !newConnection) {
                 if (!connectionManager.connection.isClosed()) {
                   
-                    logger.info("Returning existing connection::{}", connectionManager.connection);
+                    //logger.info("Returning existing connection::{}", connectionManager.connection);
                     return connectionManager.connection;
                 }
             }

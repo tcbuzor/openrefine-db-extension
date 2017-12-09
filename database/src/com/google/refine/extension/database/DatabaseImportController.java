@@ -53,7 +53,9 @@ import com.google.refine.ProjectManager;
 import com.google.refine.ProjectMetadata;
 import com.google.refine.RefineServlet;
 import com.google.refine.commands.HttpUtilities;
+import com.google.refine.extension.database.model.DatabaseColumn;
 import com.google.refine.extension.database.model.DatabaseQueryInfo;
+import com.google.refine.importers.TabularImportingParserBase;
 import com.google.refine.importing.DefaultImportingController;
 import com.google.refine.importing.ImportingController;
 import com.google.refine.importing.ImportingJob;
@@ -66,11 +68,8 @@ import com.google.refine.util.ParsingUtilities;
 public class DatabaseImportController implements ImportingController {
     
     final static Logger logger = LoggerFactory.getLogger("DatabaseImportController");
-
     protected RefineServlet servlet;
-
-    public static int DEFAULT_PREVIEW_LIMIT = 100;
-    
+    public static int DEFAULT_PREVIEW_LIMIT = 100; 
     public static String OPTIONS_KEY = "options";
     
     @Override
@@ -141,7 +140,7 @@ public class DatabaseImportController implements ImportingController {
 
 
     /**
-     * 
+     * doParsePreview
      * @param request
      * @param response
      * @param parameters
@@ -175,7 +174,7 @@ public class DatabaseImportController implements ImportingController {
                 
                 job.prepareNewProject();
                 
-                DatabaseImporter.parse(
+                parsePreview(
                     databaseQueryInfo,
                     job.project,
                     job.metadata,
@@ -215,10 +214,55 @@ public class DatabaseImportController implements ImportingController {
             }
         }
 
+    /**
+     * 
+     * @param dbQueryInfo
+     * @param project
+     * @param metadata
+     * @param job
+     * @param limit
+     * @param options
+     * @param exceptions
+     * @throws DatabaseServiceException
+     */
+    public static void parsePreview(
+            DatabaseQueryInfo dbQueryInfo, 
+            Project project, 
+            ProjectMetadata metadata,
+            final ImportingJob job, 
+            int limit, 
+            JSONObject options,
+            List<Exception> exceptions) throws DatabaseServiceException{
+        
+        DatabaseService databaseService = DatabaseService.get(dbQueryInfo.getDbConfig().getDatabaseType());
+        String querySource = getQuerySource(dbQueryInfo);
+        
+        List<DatabaseColumn> columns = databaseService.getColumns(dbQueryInfo.getDbConfig(), dbQueryInfo.getQuery());
+                
+        
+        setProgress(job, querySource, -1);
+
+        JSONUtilities.safePut(options, "ignoreLines", 0); // number of blank lines at the beginning to ignore
+        JSONUtilities.safePut(options, "headerLines", 1); // number of header lines
+
+        TabularImportingParserBase.readTable(
+                project,
+                metadata,
+                job,
+                new DBQueryResultPreviewReader(job, databaseService, querySource, columns, dbQueryInfo, 100),
+                querySource,
+                limit,
+                options,
+                exceptions
+            );
+        
+        setProgress(job, querySource, 100);
+       
+    }
   
 
     /**
-     * 
+     * doCreateProject
      * @param request
      * @param response
      * @param parameters
@@ -226,7 +270,6 @@ public class DatabaseImportController implements ImportingController {
     private void doCreateProject(HttpServletRequest request, HttpServletResponse response, Properties parameters)
             throws ServletException, IOException{
             logger.info("DatabaseImportController::doCreateProject:::{}", parameters.getProperty("jobID"));
-          
             
             long jobID = Long.parseLong(parameters.getProperty("jobID"));
             final ImportingJob job = ImportingManager.getJob(jobID);
@@ -256,11 +299,10 @@ public class DatabaseImportController implements ImportingController {
                     public void run() {
                         ProjectMetadata pm = new ProjectMetadata();
                         pm.setName(JSONUtilities.getString(optionObj, "projectName", "Untitled"));
-                        pm.setEncoding(JSONUtilities.getString(optionObj, "encoding", "UTF-8"));
-                    
+                        pm.setEncoding(JSONUtilities.getString(optionObj, "encoding", "UTF-8"));                
                         
                         try {
-                            DatabaseImporter.parse(
+                            parseCreate(
                                 databaseQueryInfo,
                                 project,
                                 pm,
@@ -276,13 +318,10 @@ public class DatabaseImportController implements ImportingController {
                       
                         if (!job.canceled) {
                             if (exceptions.size() > 0) {
-                                //logger.info("DatabaseImportController::doCreateProject:::run::exceptions :{}", exceptions);
                                 job.setError(exceptions);
                             } else {
-                                project.update(); // update all internal models, indexes, caches, etc.
-                                
-                                ProjectManager.singleton.registerProject(project, pm);
-                                
+                                project.update(); // update all internal models, indexes, caches, etc.             
+                                ProjectManager.singleton.registerProject(project, pm);                               
                                 job.setState("created-project");
                                 job.setProjectID(project.id);
                                // logger.info("DatabaseImportController::doCreateProject:::run::projectID :{}", project.id);
@@ -300,8 +339,52 @@ public class DatabaseImportController implements ImportingController {
             }
         }
     
+   
+    /**   
+     * @param dbQueryInfo
+     * @param project
+     * @param metadata
+     * @param job
+     * @param limit
+     * @param options
+     * @param exceptions
+     * @throws DatabaseServiceException
+     */
+    public static void parseCreate(
+            DatabaseQueryInfo dbQueryInfo, 
+            Project project, 
+            ProjectMetadata metadata,
+            final ImportingJob job, 
+            int limit, 
+            JSONObject options,
+            List<Exception> exceptions) throws DatabaseServiceException{
+        
+        DatabaseService databaseService = DatabaseService.get(dbQueryInfo.getDbConfig().getDatabaseType());
+        String querySource = getQuerySource(dbQueryInfo);
+        
+        List<DatabaseColumn> columns = databaseService.getColumns(dbQueryInfo.getDbConfig(), dbQueryInfo.getQuery());       
+        
+        setProgress(job, querySource, -1);
+
+        JSONUtilities.safePut(options, "ignoreLines", 0); // number of blank lines at the beginning to ignore
+        JSONUtilities.safePut(options, "headerLines", 1); // number of header lines
+
+        TabularImportingParserBase.readTable(
+                project,
+                metadata,
+                job,
+                new DBQueryResultImportReader(job, databaseService, querySource, columns, dbQueryInfo, 100),
+                querySource,
+                limit,
+                options,
+                exceptions
+            );
+        
+        setProgress(job, querySource, 100);
+     
+    }
+    
     /**
-     * 
      * @param request
      * @return
      */
@@ -327,5 +410,16 @@ public class DatabaseImportController implements ImportingController {
         }
         
         return new DatabaseQueryInfo(jdbcConfig, query);
+    }
+   
+
+    private static String getQuerySource(DatabaseQueryInfo dbQueryInfo) {
+        String dbType = dbQueryInfo.getDbConfig().getDatabaseType();
+        return DatabaseService.get(dbType).getDatabaseUrl(dbQueryInfo.getDbConfig());
+    }
+
+
+    private static  void setProgress(ImportingJob job, String querySource, int percent) {
+        job.setProgress(percent, "Reading " + querySource);
     }
 }

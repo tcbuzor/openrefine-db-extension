@@ -23,22 +23,22 @@ import org.postgresql.jdbc.PgResultSetMetaData;
 
 
 
-public class PostgreSQLDatabaseService extends DatabaseService {
+public class PgSQLDatabaseService extends DatabaseService {
     
-    private final static Logger logger = LoggerFactory.getLogger("PostgreSQLDatabaseService");
+    private final static Logger logger = LoggerFactory.getLogger("PgSQLDatabaseService");
     
     public static final String DB_NAME = "postgresql";
     public static final String DB_DRIVER = "org.postgresql.Driver";
 
-    private static PostgreSQLDatabaseService instance;
+    private static PgSQLDatabaseService instance;
 
-    private PostgreSQLDatabaseService() {
+    private PgSQLDatabaseService() {
     }
 
-    public static PostgreSQLDatabaseService getInstance() {
+    public static PgSQLDatabaseService getInstance() {
         if (instance == null) {
             SQLType.registerSQLDriver(DB_NAME, DB_DRIVER);
-            instance = new PostgreSQLDatabaseService();
+            instance = new PgSQLDatabaseService();
         }
         return instance;
     }
@@ -191,19 +191,15 @@ public class PostgreSQLDatabaseService extends DatabaseService {
     public List<DatabaseRow> getRows(DatabaseConfiguration dbConfig, String query)
             throws DatabaseServiceException {
         
-        Connection connection = PgSQLConnectionManager.getConnection(dbConfig, true);
+        Connection connection = PgSQLConnectionManager.getConnection(dbConfig, false);
+        
         try {
                 Statement statement = connection.createStatement();
+                statement.setFetchSize(10);
                 ResultSet queryResult = statement.executeQuery(query);
                 PgResultSetMetaData metadata = (PgResultSetMetaData)queryResult.getMetaData();
                 int columnCount = metadata.getColumnCount();
-//                ArrayList<DatabaseColumn> columns = new ArrayList<DatabaseColumn>(columnCount);
-//                
-//                for (int i = 1; i <= columnCount; i++) {
-//                    DatabaseColumn dc = new DatabaseColumn(metadata.getColumnName(i), metadata.getColumnLabel(i),
-//                            DatabaseColumn.getSQLType(metadata.getColumnType(i)), metadata.getColumnDisplaySize(i));
-//                    columns.add(dc);  
-//                }
+
                 int index = 0; 
                 List<DatabaseRow> rows = new ArrayList<DatabaseRow>();
                 
@@ -212,9 +208,7 @@ public class PostgreSQLDatabaseService extends DatabaseService {
                     row.setIndex(index);
                     List<String> values = new ArrayList<String>(columnCount);
                     for (int i = 1; i <= columnCount; i++) {
-                        
-                        values.add(queryResult.getString(i));
-                              
+                       values.add(queryResult.getString(i));
                     }
                     row.setValues(values);
                     rows.add(row);
@@ -237,6 +231,13 @@ public class PostgreSQLDatabaseService extends DatabaseService {
             return "jdbc:" + dbConfig.getDatabaseType() + "://" + dbConfig.getDatabaseHost()
                     + ((port == 0) ? "" : (":" + port)) + "/" + dbConfig.getDatabaseName() + "?useSSL=" + dbConfig.isUseSSL();
         
+    }
+
+    @Override
+    public Connection getConnection(DatabaseConfiguration dbConfig)
+            throws DatabaseServiceException {
+        // TODO Auto-generated method stub
+        return PgSQLConnectionManager.getConnection(dbConfig, true);
     }
 
 }

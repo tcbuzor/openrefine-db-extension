@@ -13,7 +13,7 @@
 		"alert-initial-database": "You must specify an Initial Database",
 		"alert-query": "You must specify a valid Query",
 		"form-validation-failure" : "New Connection From is Invalid!",
-		
+		"alert-connection-edit": "Connection edited successfully",
 		"connectionNameLabel": "Connection Name:",
 		"databaseTypeLabel": "Database Type:",
 		"databaseHostLabel": "Database Host:",
@@ -27,6 +27,7 @@
 		"databaseConnectButton": "Connect",
 		"newConnectionButtonDiv": "New Connection",
 		"savedConnectionSpan": "Saved Connections"
+		
 	
 	},
 	"database-parsing": {

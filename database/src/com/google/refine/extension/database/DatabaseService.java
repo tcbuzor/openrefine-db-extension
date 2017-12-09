@@ -1,6 +1,7 @@
 
 package com.google.refine.extension.database;
 
+import java.sql.Connection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,7 @@ import com.google.refine.extension.database.model.DatabaseColumn;
 import com.google.refine.extension.database.model.DatabaseInfo;
 import com.google.refine.extension.database.model.DatabaseRow;
 import com.google.refine.extension.database.mysql.MySQLDatabaseService;
-import com.google.refine.extension.database.pgsql.PostgreSQLDatabaseService;
+import com.google.refine.extension.database.pgsql.PgSQLDatabaseService;
 
 public abstract class DatabaseService {
 
@@ -27,7 +28,7 @@ public abstract class DatabaseService {
             try {
 
                 DatabaseService.DBType.registerDatabase(MySQLDatabaseService.DB_NAME, MySQLDatabaseService.getInstance());
-                DatabaseService.DBType.registerDatabase(PostgreSQLDatabaseService.DB_NAME, PostgreSQLDatabaseService.getInstance());
+                DatabaseService.DBType.registerDatabase(PgSQLDatabaseService.DB_NAME, PgSQLDatabaseService.getInstance());
                 DatabaseService.DBType.registerDatabase(MariaDBDatabaseService.DB_NAME, MariaDBDatabaseService.getInstance());
 
             } catch (Exception e) {
@@ -75,6 +76,8 @@ public abstract class DatabaseService {
     
     
     //Database Service APIs
+    public abstract Connection getConnection(DatabaseConfiguration dbConfig) throws DatabaseServiceException;
+    
     public abstract boolean testConnection(DatabaseConfiguration dbConfig) throws DatabaseServiceException;
 
     public abstract DatabaseInfo connect(DatabaseConfiguration dbConfig) throws  DatabaseServiceException;

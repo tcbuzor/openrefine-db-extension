@@ -343,7 +343,7 @@ Refine.DatabaseImportController.prototype._createProject = function() {
 	                  return "projectID" in job.config;
 	                },
 	                function(jobID, job) {
-	                	  alert("jobID::" + jobID + " job :" + job);
+	                	  //alert("jobID::" + jobID + " job :" + job);
 	                  window.clearInterval(timerID);
 	                  Refine.CreateProjectUI.cancelImportingJob(jobID);
 	                  document.location = "project?project=" + job.config.projectID;

@@ -22,7 +22,8 @@ import com.google.refine.extension.database.model.DatabaseRow;
 import com.mysql.jdbc.ResultSetMetaData;
 
 public class MySQLDatabaseService extends DatabaseService {
-    
+  
+
     private final static Logger logger = LoggerFactory.getLogger("MySQLDatabaseService");
     
     public static final String DB_NAME = "mysql";
@@ -152,10 +153,7 @@ public class MySQLDatabaseService extends DatabaseService {
         if(offset != null) {
             sb.append(" OFFSET" + " " + offset);
         }
-        
-      
-     
-        
+    
         return sb.toString();
     }
 
@@ -195,16 +193,11 @@ public class MySQLDatabaseService extends DatabaseService {
         Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
         try {
                 Statement statement = connection.createStatement();
+                statement.setFetchSize(10);
                 ResultSet queryResult = statement.executeQuery(query);
                 ResultSetMetaData metadata = (ResultSetMetaData)queryResult.getMetaData();
                 int columnCount = metadata.getColumnCount();
-//                ArrayList<DatabaseColumn> columns = new ArrayList<DatabaseColumn>(columnCount);
-//                
-//                for (int i = 1; i <= columnCount; i++) {
-//                    DatabaseColumn dc = new DatabaseColumn(metadata.getColumnName(i), metadata.getColumnLabel(i),
-//                            DatabaseColumn.getSQLType(metadata.getColumnType(i)), metadata.getColumnDisplaySize(i));
-//                    columns.add(dc);  
-//                }
+
                 int index = 0; 
                 List<DatabaseRow> rows = new ArrayList<DatabaseRow>();
                 
@@ -238,6 +231,14 @@ public class MySQLDatabaseService extends DatabaseService {
             return "jdbc:" + dbConfig.getDatabaseType() + "://" + dbConfig.getDatabaseHost()
                     + ((port == 0) ? "" : (":" + port)) + "/" + dbConfig.getDatabaseName() + "?useSSL=" + dbConfig.isUseSSL();
         
+    }
+    
+    
+    @Override
+    public Connection getConnection(DatabaseConfiguration dbConfig)
+            throws DatabaseServiceException {
+        // TODO Auto-generated method stub
+        return  MySQLConnectionManager.getConnection(dbConfig, true);
     }
     
  

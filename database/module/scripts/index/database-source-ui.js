@@ -162,11 +162,36 @@ Refine.DatabaseSourceUI.prototype.focus = function() {
 };
 
 
-Refine.DatabaseSourceUI.prototype._editConnection = function(query) {	
-	
+Refine.DatabaseSourceUI.prototype._editConnection = function(connectionInfo) {	
+	//alert("database user:" + connectionInfo.databaseUser);
+	var self = this;
+	$.ajax({
+	    url: 'command/database/saved-connection',
+	    type: 'PUT',
+	    contentType:'application/x-www-form-urlencoded',
+	    data: connectionInfo,
+	    success: function(settings) {
+	    	 if(settings){
+			  $( "#menuListUl" ).empty();
+			  var items = [];
+			  $.each(settings.savedConnections,function(index,savedConnection){
+//				  items.push('<a href="#" class="list-group-item list-group-item-action">'
+//						    + '<span class="context-menu-one context-menu-text" >' + savedConnection.connectionName + '</span>'
+//					        + '<span class="sc-context-more-vert pull-right"> </span> </a>');
+				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
+							+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+							+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
+			   })
+			  
+			  $( "#menuListUl" ).append(items.join(''));
+			  window.alert($.i18n._('database-source')["alert-connection-edit"]);   
+		  }
+	    }
+	}).fail(function( jqXhr, textStatus, errorThrown ){
+        alert( textStatus + ':' + errorThrown );
+    });
+
 };
-
-
 
 Refine.DatabaseSourceUI.prototype._executeQuery = function(jdbcQueryInfo) {
 	var self = this;
@@ -181,13 +206,17 @@ Refine.DatabaseSourceUI.prototype._saveConnection = function(jdbcConnectionInfo)
 	  function(settings) {
 		  if(settings){
 			  
+//			  self._elmts.scListGroupDiv.empty();
 			  self._elmts.menuListUl.empty();
 			  var items = [];
 			  $.each(settings.savedConnections,function(index,savedConnection){
 												   
-				  items.push('<li class="context-menu-one pure-menu-item"><a href="#" class="pure-menu-link">'
-							+ savedConnection.connectionName
-							+ '</a></li>');
+//				  items.push('<a href="#" class="list-group-item list-group-item-action">'
+//						    + '<span class="context-menu-one context-menu-text" >' + savedConnection.connectionName + '</span>'
+//					        + '<span class="sc-context-more-vert pull-right"> </span> </a>');
+				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
+							+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+							+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
 			   })
 			  
 			  self._elmts.menuListUl.append(items.join(''));
@@ -195,7 +224,9 @@ Refine.DatabaseSourceUI.prototype._saveConnection = function(jdbcConnectionInfo)
 	
 	  },
 	  "json"
-	);
+	).fail(function( jqXhr, textStatus, errorThrown ){
+        alert( textStatus + ':' + errorThrown );
+    });
 
 };
 
@@ -206,17 +237,24 @@ Refine.DatabaseSourceUI.prototype._loadSavedConnections = function() {
 	  null,
 	  function(settings) {
 		  if(settings){
-			  //window.alert('settings ' + settings);
+	
 			  self._elmts.menuListUl.empty();
+	      	 // self._elmts.scListGroupDiv.empty();
 			  var items = [];
 			  $.each(settings.savedConnections,function(index,savedConnection){
-					  
-				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link">'
-					+ '<span class="context-menu-one context-menu-text" >' + savedConnection.connectionName + '</span>'
-					+ '</a></li>');
+				  
+//				  items.push('<a href="#" class="list-group-item list-group-item-action context-menu-one">'
+//				    + '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+//			        + '<span class="sc-context-more-vert pull-right"> </span> </a>');
+//					  
+				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
+					+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+					+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
+
 			   })
 			 
-			  self._elmts.menuListUl.append(items.join(''));
+ 		    self._elmts.menuListUl.append(items.join(''));
+			 // self._elmts.scListGroupDiv.append(items.join(''));
 		  }
 		
 	  },
@@ -261,13 +299,16 @@ Refine.DatabaseSourceUI.prototype._connect = function(jdbcConnectionInfo) {
 			  $( "#currentDatabaseHostInput" ).val(jdbcConnectionInfo.databaseServer);
 			  $( "#currentDatabasePortInput" ).val(jdbcConnectionInfo.databasePort);
 			  $( "#currentInitialDatabaseInput" ).val(jdbcConnectionInfo.initialDatabase);
+			  
 			  var connectionParam = "Connection URL : "
 				  	+ "jdbc:"
-					+ databaseConfig.databaseType + "://"
-					+ databaseConfig.databaseServer + ":"
-					+ databaseConfig.databasePort + "/"
-					+ databaseConfig.initialDatabase;
-			  $( "#connectionParameterSpan" ).val(connectionParam);
+					+ jdbcConnectionInfo.databaseType + "://"
+					+ jdbcConnectionInfo.databaseServer + ":"
+					+ jdbcConnectionInfo.databasePort + "/"
+					+ jdbcConnectionInfo.initialDatabase;
+			  
+			  //alert("connectionParam::" + connectionParam);
+			  $( "#connectionParameterSpan" ).text(connectionParam);
 			  self._body.find('.newConnectionDiv').hide();
       		  self._body.find('.sqlEditorDiv').show();
 			
@@ -335,10 +376,10 @@ Refine.DatabaseSourceUI.prototype._validateNewConnectionForm = function() {
 Refine.DatabaseSourceUI.prototype._resetDatabaseImportForm = function() {	
 	var self = this;
 	$( "#connectionName" ).val("127.0.0.1");
-	$( "#databaseTypeSelect" ).val("mysql");
+	$( "#databaseTypeSelect" ).val("postgresql");
 	$( "#databaseHost" ).val("127.0.0.1");
-	$( "#databasePort" ).val("3306");
-	$( "#databaseUser" ).val("root");
+	$( "#databasePort" ).val("5432");
+	$( "#databaseUser" ).val("postgres");
 	$( "#databasePassword" ).val("");
 	$( "#initialDatabase" ).val("");
 	$( "#initialSchema" ).val("");

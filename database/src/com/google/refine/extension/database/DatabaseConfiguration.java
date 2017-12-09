@@ -6,7 +6,7 @@ public class DatabaseConfiguration {
     private String connectionName;
     private String databaseType;
     private String databaseHost;
-    private int databasePort;
+    private int    databasePort;
     private String databaseUser;
     private String databasePassword;
     private String databaseName;
@@ -79,75 +79,9 @@ public class DatabaseConfiguration {
     public void setDatabaseSchema(String initialSchema) {
         this.databaseSchema = initialSchema;
     }
+  
    
- 
 
-    public int getAcquireIncrement() {
-        // TODO Auto-generated method stub
-        return 3;
-    }
-    
-    public int getAcquireRetryAttemts() {
-        // TODO Auto-generated method stub
-        return 3;
-    }
-
-    public int getMaxConnectionIdleTime() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getMaxExcessConnectionsIdleTime() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getMaxPoolSize() {
-        // TODO Auto-generated method stub
-        return 3;
-    }
-
-    public int getMinPoolSize() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getNumHelperThreads() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getReturnConnectionTimeout() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getConnectionTestFrequency() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getMaxCachedStatements() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getMaxCachedStatementsPerConnection() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public int getNumStatementCloseThreads() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-//    
-//    public String getDatabaseUrl(String databaseType) {
-//        int port = getDatabasePort();
-//        return "jdbc:" + databaseType + "://" + getDatabaseHost() + ((port == 0) ? "" : (":" + port)) + "/" + getDatabaseName();
-//    }
-//
-//    
     public boolean isUseSSL() {
         return useSSL;
     }

@@ -14,9 +14,9 @@ import com.google.refine.importers.TabularImportingParserBase.TableDataReader;
 import com.google.refine.importing.ImportingJob;
 
 
-public class DatabaseQueryBatchRowReader implements TableDataReader {
+public class DBQueryResultImportReader implements TableDataReader {
     
-    static final Logger logger = LoggerFactory.getLogger("DatabaseQueryBatchRowReader");
+    static final Logger logger = LoggerFactory.getLogger("DBQueryResultImportReader");
 
     private final ImportingJob job;
     private final String querySource;    
@@ -30,9 +30,11 @@ public class DatabaseQueryBatchRowReader implements TableDataReader {
     private boolean usedHeaders = false;
     private DatabaseService databaseService;
     private DatabaseQueryInfo dbQueryInfo;
+    private static int processedRows = 0;
+    private static int progress = 0;
     
     
-    public DatabaseQueryBatchRowReader(
+    public DBQueryResultImportReader(
             ImportingJob job, 
             DatabaseService databaseService,
             String querySource,
@@ -46,14 +48,14 @@ public class DatabaseQueryBatchRowReader implements TableDataReader {
         this.dbColumns = columns;
         this.databaseService = databaseService;
         this.dbQueryInfo = dbQueryInfo;
-        logger.info("DatabaseQueryBatchRowReader::batchSize:" + batchSize);
+        logger.info("DBQueryResultImportReader::batchSize:" + batchSize);
 
     }
 
     @Override
     public List<Object> getNextRowOfCells() throws IOException {
    
-     // logger.info("Entry::getNextRowOfCells");
+      //logger.info("Entry::getNextRowOfCells::nextRow:{}", nextRow);
         
       try {
           
@@ -63,24 +65,31 @@ public class DatabaseQueryBatchRowReader implements TableDataReader {
                 row.add(cd.getName());
             }
             usedHeaders = true;
-            logger.info("Exit::getNextRowOfCells return header::row:" +  row);
+            //logger.info("Exit::getNextRowOfCells return header::row:" +  row);
             return row;
         }
         
         if (rowsOfCells == null || (nextRow >= batchRowStart + rowsOfCells.size() && !end)) {
             int newBatchRowStart = batchRowStart + (rowsOfCells == null ? 0 : rowsOfCells.size());
             rowsOfCells = getRowsOfCells(newBatchRowStart);
+            processedRows = processedRows + rowsOfCells.size();
             batchRowStart = newBatchRowStart;
             setProgress(job, querySource, -1 /* batchRowStart * 100 / totalRows */);
-           // logger.info("getNextRowOfCells:: rowsOfCellsIsNull::rowsOfCells size:" + rowsOfCells.size() + ":batchRowStart:" + batchRowStart + " ::nextRow:" + nextRow);
         }
         
         if (rowsOfCells != null && nextRow - batchRowStart < rowsOfCells.size()) {
-            //logger.info("Exit::getNextRowOfCells :rowsOfCellsNotNull::rowsOfCells size:" + rowsOfCells.size() + ":batchRowStart:" + batchRowStart + " ::nextRow:" + nextRow);
-            return rowsOfCells.get(nextRow++ - batchRowStart);
+            List<Object> result = rowsOfCells.get(nextRow++ - batchRowStart);
+            if(nextRow >= batchSize) {
+                rowsOfCells = getRowsOfCells(processedRows);
+                processedRows = processedRows + rowsOfCells.size();
+                logger.info("[[ Returning last row in batch:nextRow::{}, processedRows:{} ]]", nextRow, processedRows);
+                nextRow = 0;
+                if(processedRows % 100 == 0)
+                    setProgress(job, querySource, progress++);
+            }
+            return result;
         } else {
-           // logger.info("Exit::getNextRowOfCells::Returning null::");
-            return null;
+          return null;
         }
       
         
@@ -94,7 +103,6 @@ public class DatabaseQueryBatchRowReader implements TableDataReader {
    }
     
     /**
-     * 
      * @param startRow
      * @return
      * @throws IOException
@@ -106,11 +114,11 @@ public class DatabaseQueryBatchRowReader implements TableDataReader {
         List<List<Object>> rowsOfCells = new ArrayList<List<Object>>(batchSize);
         
         String query = databaseService.buildLimitQuery(batchSize, startRow, dbQueryInfo.getQuery());
-        logger.info("getRowsOfCells::Query:" +  query);
+        //logger.info("batchSize::"  + batchSize +  " startRow::" + startRow + " query::" + query );
         
         List<DatabaseRow> dbRows = databaseService.getRows(dbQueryInfo.getDbConfig(), query);
 
-        if(dbRows != null && !dbRows.isEmpty() && dbRows.size() > 1) {
+        if(dbRows != null && !dbRows.isEmpty() && dbRows.size() > 0) {
             
             for(DatabaseRow dbRow: dbRows) {
                List<String> row = dbRow.getValues();
@@ -127,25 +135,23 @@ public class DatabaseQueryBatchRowReader implements TableDataReader {
                             try {
                                 rowOfCells.add(Long.parseLong(text));
                                 continue;
-                            } catch (NumberFormatException e) {
-                                // ignore
-                            }
-                            
+                            } catch (NumberFormatException e) {}
+                           
                             try {
                                 double d = Double.parseDouble(text);
                                 if (!Double.isInfinite(d) && !Double.isNaN(d)) {
                                     rowOfCells.add(d);
                                     continue;
                                 }
-                            } catch (NumberFormatException e) {
-                                // ignore
-                            }
+                            } catch (NumberFormatException e) {}
+                          
                         }
                         
                         rowOfCells.add(text);
                     }
                     
                }
+               
                rowsOfCells.add(rowOfCells); 
                 
             }

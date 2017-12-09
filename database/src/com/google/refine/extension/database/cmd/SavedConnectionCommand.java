@@ -30,20 +30,22 @@ package com.google.refine.extension.database.cmd;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONWriter;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.refine.extension.database.DatabaseConfiguration;
-import com.google.refine.extension.database.DatabaseModuleImpl;
+
+import com.google.refine.extension.database.DatabaseUtils;
 
 
 public class SavedConnectionCommand extends DatabaseCommand {
@@ -64,11 +66,9 @@ public class SavedConnectionCommand extends DatabaseCommand {
             if(connectionName == null || connectionName.isEmpty()) {
                 writeSavedConnectionResponse(response);
             }else {
-                
-               logger.debug("SavedConnectionCommand::Get for selected connection::" + connectionName);
-               JSONObject savedConnection =  DatabaseModuleImpl.getSavedConnection(connectionName);
-               //logger.debug("SavedConnectionCommand::Get" + savedConnection);
-               writeSavedConnectionResponse(response, savedConnection);
+           
+                DatabaseConfiguration savedConnection = DatabaseUtils.getSavedConnection(connectionName);
+                writeSavedConnectionResponse(response, savedConnection);
                 
             }
             
@@ -82,24 +82,28 @@ public class SavedConnectionCommand extends DatabaseCommand {
     public void doDelete(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        logger.info("SavedConnectionCommand::Delete");
+        logger.info("SavedConnectionCommand::Delete Connection: {}", request.getParameter("connectionName"));
 
-        DatabaseConfiguration jdbcConfig = new DatabaseConfiguration();
+        String connectionName  = request.getParameter("connectionName");
         
-        jdbcConfig.setConnectionName(request.getParameter("connectionName"));
-        
-        logger.debug("SavedConnectionCommand::Delete Connection: {}", jdbcConfig.getConnectionName());
-        
-        DatabaseModuleImpl.deleteSavedConnections(jdbcConfig);
-       
+        DatabaseConfiguration savedConn = DatabaseUtils.getSavedConnection(connectionName);
+        if(savedConn == null) {
+            logger.error("Connection With name:: {} does not exist!", request.getParameter("connectionName"));
+            response.sendError(HttpStatus.SC_BAD_REQUEST, "Connection with name " + connectionName + " does not exists!");
+            response.flushBuffer();
+            return;
+        }
+
         try {
+            
+            DatabaseUtils.deleteSavedConnections(connectionName);
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "application/json");
             
             writeSavedConnectionResponse(response);
           
         } catch (Exception e) {
-            logger.error("Exception while loading settings {}", e);
+            logger.error("Exception while Deleting Connection with name: {}, error:{}",connectionName, e);
         }
     }
 
@@ -110,39 +114,39 @@ public class SavedConnectionCommand extends DatabaseCommand {
      * @throws IOException
      * @throws JSONException
      */
-    private void writeSavedConnectionResponse(HttpServletResponse response, JSONObject savedConnection) throws IOException, JSONException {
+    private void writeSavedConnectionResponse(HttpServletResponse response, DatabaseConfiguration savedConnection) throws IOException, JSONException {
         Writer w = response.getWriter();
         try {
             JSONWriter writer = new JSONWriter(w);
             
             writer.object();
-            writer.key(DatabaseModuleImpl.SAVED_CONNECTION_KEY);
+            writer.key(DatabaseUtils.SAVED_CONNECTION_KEY);
             writer.array();
             
             writer.object();
             writer.key("connectionName");
-            writer.value(savedConnection.get("connectionName"));
+            writer.value(savedConnection.getConnectionName());
             
             writer.key("databaseType");
-            writer.value(savedConnection.get("databaseType"));
+            writer.value(savedConnection.getDatabaseType());
 
             writer.key("databaseHost");
-            writer.value(savedConnection.get("databaseHost"));
+            writer.value(savedConnection.getDatabaseHost());
 
             writer.key("databasePort");
-            writer.value(savedConnection.get("databasePort"));
+            writer.value(savedConnection.getDatabasePort());
 
             writer.key("databaseName");
-            writer.value(savedConnection.get("databaseName"));
+            writer.value(savedConnection.getDatabaseName());
 
             writer.key("databasePassword");
-            writer.value(savedConnection.get("databasePassword"));
+            writer.value(savedConnection.getDatabasePassword());
 
             writer.key("databaseSchema");
-            writer.value(savedConnection.get("databaseSchema"));
+            writer.value(savedConnection.getDatabaseSchema());
             
             writer.key("databaseUser");
-            writer.value(savedConnection.get("databaseUser"));
+            writer.value(savedConnection.getDatabaseUser());
 
             writer.endObject();
             writer.endArray();
@@ -165,47 +169,43 @@ public class SavedConnectionCommand extends DatabaseCommand {
         Writer w = response.getWriter();
         try {
             
-            JSONObject settingsObject = DatabaseModuleImpl.dbExtensionConfig;
-            //logger.debug("Updated SettingsObject Object Retrieved... " + settingsObject);
-
-            JSONArray savedConnectionArray = (JSONArray) settingsObject.get(DatabaseModuleImpl.SAVED_CONNECTION_KEY);
-
+            List<DatabaseConfiguration> savedConnections = DatabaseUtils.getSavedConnections();
             JSONWriter writer = new JSONWriter(w);
 
             writer.object();
-            writer.key(DatabaseModuleImpl.SAVED_CONNECTION_KEY);
+            writer.key(DatabaseUtils.SAVED_CONNECTION_KEY);
             writer.array();
 
-            int size = savedConnectionArray.size();
+            int size = savedConnections.size();
 
             for (int i = 0; i < size; i++) {
                 
                 writer.object();
-                JSONObject json = (JSONObject) savedConnectionArray.get(i);
+                DatabaseConfiguration dbConfig = (DatabaseConfiguration) savedConnections.get(i);
 
                 writer.key("connectionName");
-                writer.value(json.get("connectionName"));
+                writer.value(dbConfig.getConnectionName());
 
                 writer.key("databaseType");
-                writer.value(json.get("databaseType"));
+                writer.value(dbConfig.getDatabaseType());
 
                 writer.key("databaseHost");
-                writer.value(json.get("databaseHost"));
+                writer.value(dbConfig.getDatabaseHost());
 
                 writer.key("databasePort");
-                writer.value(json.get("databasePort"));
+                writer.value(dbConfig.getDatabasePort());
 
                 writer.key("databaseName");
-                writer.value(json.get("databaseName"));
+                writer.value(dbConfig.getDatabaseName());
 
                 writer.key("databasePassword");
-                writer.value(json.get("databasePassword"));
+                writer.value(dbConfig.getDatabasePassword());
 
                 writer.key("databaseSchema");
-                writer.value(json.get("databaseSchema"));
+                writer.value(dbConfig.getDatabaseSchema());
                 
                 writer.key("databaseUser");
-                writer.value(json.get("databaseUser"));
+                writer.value(dbConfig.getDatabaseUser());
 
                 writer.endObject();
 
@@ -226,13 +226,18 @@ public class SavedConnectionCommand extends DatabaseCommand {
         logger.info("SavedConnectionCommand::Post");
         
         DatabaseConfiguration jdbcConfig = getJdbcConfiguration(request);
-        
-       // logger.debug("SavedConnectionCommand Add Connection: {}", jdbcConfig);
+
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
      
+        DatabaseConfiguration savedConn = DatabaseUtils.getSavedConnection(jdbcConfig.getConnectionName());
+        if(savedConn != null) {
+            response.sendError(HttpStatus.SC_BAD_REQUEST, "Connection with name " + jdbcConfig.getConnectionName() + " already exists!");
+            response.flushBuffer();
+            return;
+        }
         
-        DatabaseModuleImpl.addToSavedConnections(jdbcConfig);
+        DatabaseUtils.addToSavedConnections(jdbcConfig);
 
         try {
             response.setCharacterEncoding("UTF-8");
@@ -250,7 +255,48 @@ public class SavedConnectionCommand extends DatabaseCommand {
     @Override
     public void doPut(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        logger.debug("SavedConnectionCommand::Put");
+     
+        logger.info("SavedConnectionCommand::Put::databaseType " + request.getParameter("databaseType"));
+        
+        DatabaseConfiguration jdbcConfig = getJdbcConfiguration(request);
+        StringBuilder sb = new StringBuilder();
+        boolean error = false;
+        if(jdbcConfig.getConnectionName() == null) {
+            sb.append("Connection Name, ");
+            error = true;
+        }
+        if(jdbcConfig.getDatabaseHost() == null) {
+            sb.append("Database Host, ");
+            error = true;
+        }
+        if(jdbcConfig.getDatabaseUser() == null) {
+            sb.append("Database User, ");
+            error = true;
+        }
+        if(jdbcConfig.getDatabaseName() == null) {
+            sb.append("Database Name, ");
+            error = true;
+        }
+        if(error) {
+            sb.append(" is missing");
+            logger.info("Connection Parameter errors::{}", sb.toString());
+            response.sendError(HttpStatus.SC_BAD_REQUEST, sb.toString());
+        }
+       
+       
+        logger.info("SavedConnectionCommand::PUT Connection: {}", jdbcConfig.getConnectionName());
+        
+        DatabaseUtils.editSavedConnections(jdbcConfig);
+       
+        try {
+            response.setCharacterEncoding("UTF-8");
+            response.setHeader("Content-Type", "application/json");
+            
+            writeSavedConnectionResponse(response);
+          
+        } catch (Exception e) {
+            logger.error("Exception while loading settings {}", e);
+        }
     }
 
     

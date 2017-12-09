@@ -27,7 +27,7 @@ public abstract class DatabaseCommand extends Command {
         DatabaseConfiguration jdbcConfig = new DatabaseConfiguration();
 
         jdbcConfig.setConnectionName(request.getParameter("connectionName"));
-        jdbcConfig.setDatabaseType(request.getParameter("databaseType").toLowerCase());
+        jdbcConfig.setDatabaseType(request.getParameter("databaseType"));
         jdbcConfig.setDatabaseHost(request.getParameter("databaseServer"));
         jdbcConfig.setDatabasePort(Integer.parseInt(request.getParameter("databasePort")));
         jdbcConfig.setDatabaseUser(request.getParameter("databaseUser"));
