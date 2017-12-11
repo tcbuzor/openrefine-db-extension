@@ -2,26 +2,25 @@
 
 <!--+
     |
-    |  OpenRefine Database Extension Build File
-    |
+    |  OpenRefine Database Extension Build File    
+    |                
     +-->
     
-<project name="openrefine-database-extension" default="build" basedir=".">
+<project name="refine-database-extension" default="build" basedir=".">
 
-    <tstamp/>
+	<property environment="env"/>
+	<echo message="JAVA_HOME is set to = ${env.JAVA_HOME}" />
+	
+	<tstamp/>
     <property name="name" value="database-extension"/>
     <property name="version" value="0.1"/>
     <property name="revision" value="${DSTAMP}${TSTAMP}"/>
     <property name="dist.dir" value="dist"/>
     <property name="ext.dir" value="${dist.dir}/${name}"/>
     <property name="fullname" value="${name}-${version}-${revision}" />
-    
+	
     <property name="refine.dir" value="${basedir}/../../main" />
-    <!-- We assume that we're a parallel project in an Eclipse workspace.
-         If you're using the SVN layout instead, you want something like:
-    <property name="refine.dir" value="${basedir}/../grefine-all/main" />
-    <property name="server.lib.dir" value="${basedir}/../grefine-all/server/lib" />
-    -->
+
     <property name="server.lib.dir" value="${basedir}/../grefine-server/lib" />
 
     <property name="refine.webinf.dir" value="${refine.dir}/webapp/WEB-INF" />

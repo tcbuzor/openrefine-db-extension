@@ -245,6 +245,7 @@ public class DatabaseImportController implements ImportingController {
         JSONUtilities.safePut(options, "ignoreLines", 0); // number of blank lines at the beginning to ignore
         JSONUtilities.safePut(options, "headerLines", 1); // number of header lines
 
+        
         TabularImportingParserBase.readTable(
                 project,
                 metadata,
@@ -369,6 +370,8 @@ public class DatabaseImportController implements ImportingController {
         JSONUtilities.safePut(options, "ignoreLines", 0); // number of blank lines at the beginning to ignore
         JSONUtilities.safePut(options, "headerLines", 1); // number of header lines
 
+        long startTime = System.currentTimeMillis() ;
+        
         TabularImportingParserBase.readTable(
                 project,
                 metadata,
@@ -379,6 +382,10 @@ public class DatabaseImportController implements ImportingController {
                 options,
                 exceptions
             );
+        
+        long endTime = System.currentTimeMillis() ;
+        
+        logger.info("Execution Time: {}", endTime - startTime);
         
         setProgress(job, querySource, 100);
      
