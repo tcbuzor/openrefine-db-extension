@@ -35,7 +35,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 .database-container {
 //   margin-left: 200px;
-     width: 50%;
+ //    width: 50%;
 //   min-height: 50%;
 }
 
@@ -96,34 +96,56 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     width: 200px;
     border: 1px solid #bce8f1;
     border-radius: 4px;
+    margin-right:10px;
+	  padding-right:10px;
+	  margin-bottom:10px;
 }
 .custom-restricted-width {
     /* To limit the menu width to the content of the menu: */
     display: inline-block;
     /* Or set the width explicitly: */
     /* width: 10em; */
+    margin-right:10px;
+	  padding-right:10px;
+	  margin-bottom:10px;
 }
 .no-resize {
 	resize: none;
 }
-.layoutDiv {
+.layout-div {
   width : 100%;
   
 }
-.layoutDiv .connectionDivLayout {
+.layout-div .connection-div-layout {
 	min-width: 400px;
 }
+.fnew-connection-legend {
+  padding-left: 2px;
+  margin-left: 2px;
+}
 
-.sidebarDiv {
-   //border: 1px solid #bce8f1;
+.sql-editor-div {
+	margin-left:40px;
+	padding-left:20px;
+}
+.new-connection-div {
+	margin-left:40px;
+	padding-left:20px;
+}	
+.new-connection-fieldset {
+   border:  1px solid gray;
+}
+.sc-list {
+   border-bottom: 1px dotted #bce8f1;
 }
 
 .sc-context-more-vert:after {
   content: "";
   display: inline-block;
-  background: url("../images/more_vert_black_16x16.png") no-repeat top right;
-  line-height: 1;
-  width: 24px;
-  height: 24px;
+  background: url("../images/more-option-horiz-16.png") no-repeat top right;
+ // line-height: 1;
+  width: 16px;
+  height: 16px;
   -webkit-font-smoothing: antialiased;
+  
 }

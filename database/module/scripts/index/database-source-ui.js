@@ -60,8 +60,10 @@ Refine.DatabaseSourceUI.prototype.attachUI = function(body) {
   
   this._elmts.newConnectionButton.click(function(evt) {
 	  self._resetDatabaseImportForm();
-	  self._body.find('.newConnectionDiv').show();  
-	  self._body.find('.sqlEditorDiv').hide();
+	  $( "#newConnectionDiv" ).show();
+	  $( "#sqlEditorDiv" ).hide();
+	//   self._body.find('.newConnectionDiv').show();  
+	//   self._body.find('.sqlEditorDiv').hide();
 	 
   });
   
@@ -178,9 +180,10 @@ Refine.DatabaseSourceUI.prototype._editConnection = function(connectionInfo) {
 //				  items.push('<a href="#" class="list-group-item list-group-item-action">'
 //						    + '<span class="context-menu-one context-menu-text" >' + savedConnection.connectionName + '</span>'
 //					        + '<span class="sc-context-more-vert pull-right"> </span> </a>');
-				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
-							+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
-							+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
+				  
+				  items.push('<li class="pure-menu-item sc-list"><a href="#" class="pure-menu-link context-menu-one">'
+					+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+					+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
 			   })
 			  
 			  $( "#menuListUl" ).append(items.join(''));
@@ -214,9 +217,10 @@ Refine.DatabaseSourceUI.prototype._saveConnection = function(jdbcConnectionInfo)
 //				  items.push('<a href="#" class="list-group-item list-group-item-action">'
 //						    + '<span class="context-menu-one context-menu-text" >' + savedConnection.connectionName + '</span>'
 //					        + '<span class="sc-context-more-vert pull-right"> </span> </a>');
-				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
-							+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
-							+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
+				  
+				  items.push('<li class="pure-menu-item sc-list"><a href="#" class="pure-menu-link context-menu-one">'
+					+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+					+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
 			   })
 			  
 			  self._elmts.menuListUl.append(items.join(''));
@@ -239,22 +243,22 @@ Refine.DatabaseSourceUI.prototype._loadSavedConnections = function() {
 		  if(settings){
 	
 			  self._elmts.menuListUl.empty();
-	      	 // self._elmts.scListGroupDiv.empty();
+	      	  //self._elmts.scListGroupDiv.empty();
 			  var items = [];
 			  $.each(settings.savedConnections,function(index,savedConnection){
 				  
 //				  items.push('<a href="#" class="list-group-item list-group-item-action context-menu-one">'
 //				    + '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
 //			        + '<span class="sc-context-more-vert pull-right"> </span> </a>');
-//					  
-				  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
+					  
+				  items.push('<li class="pure-menu-item sc-list"><a href="#" class="pure-menu-link context-menu-one">'
 					+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
 					+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
 
 			   })
 			 
- 		    self._elmts.menuListUl.append(items.join(''));
-			 // self._elmts.scListGroupDiv.append(items.join(''));
+ 		     self._elmts.menuListUl.append(items.join(''));
+			//  self._elmts.scListGroupDiv.append(items.join(''));
 		  }
 		
 	  },
@@ -309,8 +313,10 @@ Refine.DatabaseSourceUI.prototype._connect = function(jdbcConnectionInfo) {
 			  
 			  //alert("connectionParam::" + connectionParam);
 			  $( "#connectionParameterSpan" ).text(connectionParam);
-			  self._body.find('.newConnectionDiv').hide();
-      		  self._body.find('.sqlEditorDiv').show();
+			//   self._body.find('.newConnectionDiv').hide();
+			// 	self._body.find('.sqlEditorDiv').show();
+				$( "#newConnectionDiv" ).hide();
+				$( "#sqlEditorDiv" ).show();
 			
 		  }else{
 			  window.alert("Unable to establish connection to database");

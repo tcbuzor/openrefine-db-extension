@@ -170,9 +170,10 @@ DatabaseExtension.handleDeleteConnectionClicked = function(connectionName) {
 //					  items.push('<li class="context-menu-one pure-menu-item"><a href="#" class="pure-menu-link">'
 //								+ savedConnection.connectionName
 //								+ '</a></li>');
-					  items.push('<li class="pure-menu-item"><a href="#" class="pure-menu-link context-menu-one">'
-								+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
-								+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
+					  
+					  items.push('<li class="pure-menu-item sc-list"><a href="#" class="pure-menu-link context-menu-one">'
+						+ '<span class="context-menu-text" >' + savedConnection.connectionName + '</span>'
+						+ '<span class="sc-context-more-vert pull-right"> </span></a></li>');
 				   })
 				  
 				  $( "#menuListUl" ).append(items.join(''));

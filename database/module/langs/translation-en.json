@@ -23,7 +23,7 @@
 		"databaseNameLabel": "Database:",
 		"databaseSchemaLabel": "Schema:",
 		"databaseTestButton": "Test",
-		"databaseSaveButton": "Add to Favorites",
+		"databaseSaveButton": "Save",
 		"databaseConnectButton": "Connect",
 		"newConnectionButtonDiv": "New Connection",
 		"savedConnectionSpan": "Saved Connections"
