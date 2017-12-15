@@ -57,9 +57,8 @@ public class MySQLDatabaseService extends DatabaseService {
    
     @Override
     public DatabaseInfo executeQuery(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException{
-            
-        Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
-        try {
+       try {
+                Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 ResultSetMetaData metadata = (ResultSetMetaData)queryResult.getMetaData();
@@ -100,6 +99,8 @@ public class MySQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        }finally {
+            MySQLConnectionManager.shutdown();
         }
     }
     
@@ -110,10 +111,9 @@ public class MySQLDatabaseService extends DatabaseService {
      * @throws DatabaseServiceException
      */
     private DatabaseInfo getMetadata(DatabaseConfiguration connectionInfo)  throws DatabaseServiceException {
-           
-        Connection connection = MySQLConnectionManager.getConnection(connectionInfo, true);
-        
+       
         try {
+            Connection connection = MySQLConnectionManager.getConnection(connectionInfo, true);
             if(connection != null) {
                 java.sql.DatabaseMetaData metadata;
 
@@ -135,6 +135,8 @@ public class MySQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        }finally {
+            MySQLConnectionManager.shutdown();
         }
        
         return null;
@@ -159,10 +161,9 @@ public class MySQLDatabaseService extends DatabaseService {
 
     @Override
     public ArrayList<DatabaseColumn> getColumns(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException{
-        
-        Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
-
+      
         try {
+            Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
             Statement statement = connection.createStatement();
 
             ResultSet queryResult = statement.executeQuery(query);
@@ -181,6 +182,8 @@ public class MySQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        }finally {
+            MySQLConnectionManager.shutdown();
         }
 
       
@@ -190,8 +193,8 @@ public class MySQLDatabaseService extends DatabaseService {
     public List<DatabaseRow> getRows(DatabaseConfiguration dbConfig, String query)
             throws DatabaseServiceException {
         
-        Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
         try {
+                Connection connection = MySQLConnectionManager.getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 statement.setFetchSize(10);
                 ResultSet queryResult = statement.executeQuery(query);
@@ -221,6 +224,8 @@ public class MySQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        }finally {
+            MySQLConnectionManager.shutdown();
         }
     }
 

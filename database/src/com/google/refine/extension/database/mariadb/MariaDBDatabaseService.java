@@ -23,6 +23,7 @@ import com.google.refine.extension.database.model.DatabaseInfo;
 import com.google.refine.extension.database.model.DatabaseRow;
 
 
+
 public class MariaDBDatabaseService extends DatabaseService {
     
     static final Logger logger = LoggerFactory.getLogger("MariaDBDatabaseService");
@@ -58,8 +59,9 @@ public class MariaDBDatabaseService extends DatabaseService {
     @Override
     public DatabaseInfo executeQuery(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException{
             
-        Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
+        
         try {
+                Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 MariaDbResultSetMetaData metadata = (MariaDbResultSetMetaData)queryResult.getMetaData();
@@ -100,6 +102,8 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        } finally {
+            MariaDBConnectionManager.shutdown();
         }
     }
     
@@ -110,10 +114,9 @@ public class MariaDBDatabaseService extends DatabaseService {
      * @throws DatabaseServiceException
      */
     private DatabaseInfo getMetadata(DatabaseConfiguration connectionInfo)  throws DatabaseServiceException {
-           
-        Connection connection = MariaDBConnectionManager.getConnection(connectionInfo, true);
-        
+     
         try {
+            Connection connection = MariaDBConnectionManager.getConnection(connectionInfo, true);
             if(connection != null) {
                 java.sql.DatabaseMetaData metadata;
 
@@ -135,6 +138,8 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        }  finally {
+            MariaDBConnectionManager.shutdown();
         }
        
         return null;
@@ -159,10 +164,10 @@ public class MariaDBDatabaseService extends DatabaseService {
 
     @Override
     public ArrayList<DatabaseColumn> getColumns(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException{
-        
-        Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
-
+      
         try {
+            
+            Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
             Statement statement = connection.createStatement();
 
             ResultSet queryResult = statement.executeQuery(query);
@@ -181,6 +186,8 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        } finally {
+            MariaDBConnectionManager.shutdown();
         }
 
       
@@ -190,19 +197,14 @@ public class MariaDBDatabaseService extends DatabaseService {
     public List<DatabaseRow> getRows(DatabaseConfiguration dbConfig, String query)
             throws DatabaseServiceException {
         
-        Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
+        
         try {
+                Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 MariaDbResultSetMetaData metadata = (MariaDbResultSetMetaData)queryResult.getMetaData();
                 int columnCount = metadata.getColumnCount();
-//                ArrayList<DatabaseColumn> columns = new ArrayList<DatabaseColumn>(columnCount);
-//                
-//                for (int i = 1; i <= columnCount; i++) {
-//                    DatabaseColumn dc = new DatabaseColumn(metadata.getColumnName(i), metadata.getColumnLabel(i),
-//                            DatabaseColumn.getSQLType(metadata.getColumnType(i)), metadata.getColumnDisplaySize(i));
-//                    columns.add(dc);  
-//                }
+
                 int index = 0; 
                 List<DatabaseRow> rows = new ArrayList<DatabaseRow>();
                 
@@ -226,6 +228,8 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        }finally {
+            MariaDBConnectionManager.shutdown();
         }
     }
 

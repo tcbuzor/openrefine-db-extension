@@ -30,7 +30,7 @@ public class PgSQLConnectionManager {
  
         try {
             this.type = dbType;
-            logger.info("Acquiring Unmanaged Connection for {}",getDatabaseUrl(databaseConfiguration));
+            //logger.info("Acquiring Unmanaged Connection for {}",getDatabaseUrl(databaseConfiguration));
             connection = getNewConnection(dbType, databaseConfiguration);
             connection.close();
         } catch (SQLException e) {
