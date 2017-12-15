@@ -20,9 +20,6 @@ import com.google.refine.extension.database.model.DatabaseInfo;
 import com.google.refine.extension.database.model.DatabaseRow;
 import org.postgresql.jdbc.PgResultSetMetaData;
 
-
-
-
 public class PgSQLDatabaseService extends DatabaseService {
     
     private final static Logger logger = LoggerFactory.getLogger("PgSQLDatabaseService");
@@ -138,8 +135,7 @@ public class PgSQLDatabaseService extends DatabaseService {
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
         }
        
-        return null;
-        
+        return null;       
     }
 
     @Override
@@ -154,7 +150,7 @@ public class PgSQLDatabaseService extends DatabaseService {
         if(offset != null) {
             sb.append(" OFFSET" + " " + offset);
         }
-   
+        
         return sb.toString();
     }
 
@@ -236,7 +232,6 @@ public class PgSQLDatabaseService extends DatabaseService {
     @Override
     public Connection getConnection(DatabaseConfiguration dbConfig)
             throws DatabaseServiceException {
-        // TODO Auto-generated method stub
         return PgSQLConnectionManager.getConnection(dbConfig, true);
     }
 

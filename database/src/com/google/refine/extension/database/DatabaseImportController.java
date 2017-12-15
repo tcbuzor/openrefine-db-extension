@@ -225,7 +225,7 @@ public class DatabaseImportController implements ImportingController {
      * @param exceptions
      * @throws DatabaseServiceException
      */
-    public static void parsePreview(
+    private static void parsePreview(
             DatabaseQueryInfo dbQueryInfo, 
             Project project, 
             ProjectMetadata metadata,
@@ -351,7 +351,7 @@ public class DatabaseImportController implements ImportingController {
      * @param exceptions
      * @throws DatabaseServiceException
      */
-    public static void parseCreate(
+    private static void parseCreate(
             DatabaseQueryInfo dbQueryInfo, 
             Project project, 
             ProjectMetadata metadata,

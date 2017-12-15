@@ -137,8 +137,6 @@ public class PgSQLConnectionManager {
 
             if (connectionManager.connection != null  && !newConnection) {
                 if (!connectionManager.connection.isClosed()) {
-                  
-                    //logger.info("Returning existing connection::{}", connectionManager.connection);
                     return connectionManager.connection;
                 }
             }

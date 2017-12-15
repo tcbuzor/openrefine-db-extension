@@ -1,4 +1,4 @@
-This project is an extension for Google Refine that provides a way to import data from a sql database using JDBC.
+This project is an extension for Google Refine that provides a way to import database data using JDBC.
 
 
 INSTALL
@@ -9,7 +9,7 @@ INSTALL
 For more information on how to write a Google Refine extensions and where to put the files see http://code.google.com/p/google-refine/wiki/WriteAnExtension
 
 The folder structure should resemble this:
-OpenRefine/
+grefine-all/
 ----------/extensions
 --------------/database
 ------------------/module

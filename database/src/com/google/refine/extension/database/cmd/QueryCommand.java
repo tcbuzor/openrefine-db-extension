@@ -41,7 +41,7 @@ import org.json.JSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.refine.ProjectManager;
+//import com.google.refine.ProjectManager;
 import com.google.refine.extension.database.DatabaseConfiguration;
 import com.google.refine.extension.database.DatabaseService;
 import com.google.refine.extension.database.DatabaseServiceException;
@@ -61,7 +61,7 @@ public class QueryCommand extends DatabaseCommand {
         String query = request.getParameter("queryString");
         logger.info("QueryCommand::Post::DatabaseConfiguration::{}::Query::{} " ,databaseConfiguration, query);
         
-        ProjectManager.singleton.setBusy(true);
+        //ProjectManager.singleton.setBusy(true);
         try {
            
             response.setCharacterEncoding("UTF-8");
@@ -80,7 +80,8 @@ public class QueryCommand extends DatabaseCommand {
                 
                 writer.object();
                 writer.key("code"); writer.value("ok");
-                writer.key("QueryResult"); writer.value(jsonStr);
+                writer.key("QueryResult"); 
+                writer.value(jsonStr);
                 writer.endObject();
                
                
@@ -98,7 +99,7 @@ public class QueryCommand extends DatabaseCommand {
             logger.error("QueryCommand::Post::Exception::{}", e);
             throw new ServletException(e);
         } finally {
-            ProjectManager.singleton.setBusy(false);
+           // ProjectManager.singleton.setBusy(false);
         }
 
         

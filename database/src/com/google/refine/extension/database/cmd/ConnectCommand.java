@@ -41,7 +41,7 @@ import org.json.JSONWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.refine.ProjectManager;
+//import com.google.refine.ProjectManager;
 import com.google.refine.extension.database.DatabaseConfiguration;
 import com.google.refine.extension.database.DatabaseService;
 import com.google.refine.extension.database.DatabaseServiceException;
@@ -61,7 +61,7 @@ public class ConnectCommand extends DatabaseCommand {
  
         logger.info("ConnectCommand::Post::{}", databaseConfiguration);
         
-        ProjectManager.singleton.setBusy(true);
+       // ProjectManager.singleton.setBusy(true);
         try {
         
             response.setCharacterEncoding("UTF-8");
@@ -77,7 +77,8 @@ public class ConnectCommand extends DatabaseCommand {
                 writer.object();
                 writer.key("code"); writer.value("ok");
                 String databaseInfoString = mapperObj.writeValueAsString(databaseInfo);
-                writer.key("databaseInfo"); writer.value(databaseInfoString);
+                writer.key("databaseInfo"); 
+                writer.value(databaseInfoString);
               
                 writer.endObject();
            
@@ -95,15 +96,10 @@ public class ConnectCommand extends DatabaseCommand {
             logger.error("ConnectCommand::Post::Exception::{}", e);
             throw new ServletException(e);
         } finally {
-            ProjectManager.singleton.setBusy(false);
+           // ProjectManager.singleton.setBusy(false);
         }
 
         
     }
-
-   
-
-   
-
 
 }

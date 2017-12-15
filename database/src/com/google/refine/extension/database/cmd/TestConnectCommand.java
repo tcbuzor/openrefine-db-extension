@@ -59,7 +59,7 @@ public class TestConnectCommand extends DatabaseCommand {
         DatabaseConfiguration databaseConfiguration = getJdbcConfiguration(request);
         logger.info("TestConnectCommand::Post::{}", databaseConfiguration);
         
-        ProjectManager.singleton.setBusy(true);
+        //ProjectManager.singleton.setBusy(true);
         try {
             
             
@@ -79,7 +79,7 @@ public class TestConnectCommand extends DatabaseCommand {
                 
                 writer.key("connectionResult"); 
                 writer.value(connectionTestResult);
-                writer.key("status"); 
+                writer.key("code"); 
                 writer.value("ok");
                 writer.endObject();
                 
@@ -95,7 +95,7 @@ public class TestConnectCommand extends DatabaseCommand {
             logger.error("TestConnectCommand::Post::Exception::{}", e);
             throw new ServletException(e);
         } finally {
-            ProjectManager.singleton.setBusy(false);
+            //ProjectManager.singleton.setBusy(false);
         }
 
         

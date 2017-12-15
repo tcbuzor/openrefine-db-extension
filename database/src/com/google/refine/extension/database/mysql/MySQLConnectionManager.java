@@ -14,7 +14,7 @@ import com.google.refine.extension.database.SQLType;
 
 public class MySQLConnectionManager {
 
-    static final Logger logger = LoggerFactory.getLogger("MariaDBConnectionManager");
+    static final Logger logger = LoggerFactory.getLogger("MySQLConnectionManager");
     private Connection connection; 
     private SQLType type;
 

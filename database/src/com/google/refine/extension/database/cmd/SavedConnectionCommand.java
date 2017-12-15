@@ -229,6 +229,12 @@ public class SavedConnectionCommand extends DatabaseCommand {
 
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
+        
+        if(jdbcConfig.getConnectionName() == null) {
+            response.sendError(HttpStatus.SC_BAD_REQUEST, "Connection Name is Required!");
+            response.flushBuffer();
+            return;
+        }
      
         DatabaseConfiguration savedConn = DatabaseUtils.getSavedConnection(jdbcConfig.getConnectionName());
         if(savedConn != null) {

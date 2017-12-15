@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="src" path="tests"/>
+	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/grefine"/>
 	<classpathentry kind="con" path="org.testng.TESTNG_CONTAINER"/>
@@ -15,5 +15,7 @@
 	<classpathentry kind="lib" path="/grefine/webapp/WEB-INF/lib/httpcore-4.2.4.jar" sourcepath="/grefine/webapp/WEB-INF/lib-src/httpcore-4.2.4-sources.jar"/>
 	<classpathentry kind="lib" path="module/MOD-INF/lib/postgresql-42.1.4.jar"/>
 	<classpathentry kind="lib" path="module/MOD-INF/lib/mariadb-java-client-2.2.0.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="module/MOD-INF/lib/mockito-all-1.10.19.jar"/>
 	<classpathentry kind="output" path="module/MOD-INF/classes"/>
 </classpath>
