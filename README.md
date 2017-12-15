@@ -12,13 +12,13 @@ INSTALL
 For more information on how to write a Google Refine extensions and where to put the files see http://code.google.com/p/google-refine/wiki/WriteAnExtension
 
 The folder structure should resemble this:
-OpenRefine/
-* /extensions
-  * /database
-    * /module
-    * /src
-    * build.xml
-    * README (this file)
+* OpenRefine/
+  * /extensions
+    * /database
+      * /module
+      * /src
+      * build.xml
+      * README (this file)
 
 3. Update build.xml in folder /extensions with build and clean ant tasks for database:
 
