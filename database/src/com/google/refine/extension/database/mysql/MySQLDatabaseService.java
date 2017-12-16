@@ -58,7 +58,7 @@ public class MySQLDatabaseService extends DatabaseService {
     @Override
     public DatabaseInfo executeQuery(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException{
        try {
-                Connection connection = MySQLConnectionManager.getConnection(dbConfig, true);
+                Connection connection = MySQLConnectionManager.getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 ResultSetMetaData metadata = (ResultSetMetaData)queryResult.getMetaData();
@@ -155,7 +155,7 @@ public class MySQLDatabaseService extends DatabaseService {
         if(offset != null) {
             sb.append(" OFFSET" + " " + offset);
         }
-    
+        
         return sb.toString();
     }
 

@@ -30,7 +30,7 @@ public class DBQueryResultImportReader implements TableDataReader {
     private boolean usedHeaders = false;
     private DatabaseService databaseService;
     private DatabaseQueryInfo dbQueryInfo;
-    private static int processedRows = 0;
+    private  int processedRows = 0;
     private static int progress = 0;
     
     

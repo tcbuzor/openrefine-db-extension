@@ -58,7 +58,7 @@ public class PgSQLDatabaseService extends DatabaseService {
             
         
         try {
-            Connection connection = PgSQLConnectionManager.getConnection(dbConfig, true);
+                Connection connection = PgSQLConnectionManager.getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 PgResultSetMetaData metadata = (PgResultSetMetaData)queryResult.getMetaData();
@@ -193,9 +193,7 @@ public class PgSQLDatabaseService extends DatabaseService {
     @Override
     public List<DatabaseRow> getRows(DatabaseConfiguration dbConfig, String query)
             throws DatabaseServiceException {
-        
-        
-        
+       
         try {
                 Connection connection = PgSQLConnectionManager.getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
