@@ -32,7 +32,7 @@ public class PgSQLConnectionManagerTest {
         dc.setDatabaseUser("postgres");
         dc.setUseSSL(false);
         try {
-            boolean conn = PgSQLConnectionManager.testConnection(dc);
+            boolean conn = PgSQLConnectionManager.getInstance().testConnection(dc);
             Assert.assertEquals(conn, true);
             
         } catch (DatabaseServiceException e) {
@@ -52,7 +52,7 @@ public class PgSQLConnectionManagerTest {
         dc.setDatabaseUser("postgres");
         dc.setUseSSL(false);
         try {
-             Connection conn = PgSQLConnectionManager.getConnection(dc, true);
+             Connection conn = PgSQLConnectionManager.getInstance().getConnection(dc, true);
              Assert.assertNotNull(conn);
             
         } catch (DatabaseServiceException e) {
@@ -73,10 +73,10 @@ public class PgSQLConnectionManagerTest {
         dc.setDatabaseUser("postgres");
         dc.setUseSSL(false);
         try {
-             Connection conn = PgSQLConnectionManager.getConnection(dc, true);
+             Connection conn = PgSQLConnectionManager.getInstance().getConnection(dc, true);
              Assert.assertNotNull(conn);
              
-             PgSQLConnectionManager.shutdown();
+             PgSQLConnectionManager.getInstance().shutdown();
              
              if(conn != null) {
                  Assert.assertEquals(conn.isClosed(), true);

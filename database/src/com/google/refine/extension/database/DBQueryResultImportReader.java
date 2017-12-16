@@ -54,9 +54,7 @@ public class DBQueryResultImportReader implements TableDataReader {
 
     @Override
     public List<Object> getNextRowOfCells() throws IOException {
-   
-      //logger.info("Entry::getNextRowOfCells::nextRow:{}", nextRow);
-        
+      
       try {
           
         if (!usedHeaders) {
@@ -82,13 +80,22 @@ public class DBQueryResultImportReader implements TableDataReader {
             if(nextRow >= batchSize) {
                 rowsOfCells = getRowsOfCells(processedRows);
                 processedRows = processedRows + rowsOfCells.size();
-                logger.info("[[ Returning last row in batch:nextRow::{}, processedRows:{} ]]", nextRow, processedRows);
+                
+                if(logger.isDebugEnabled()) {
+                    logger.debug("[[ Returning last row in batch:nextRow::{}, processedRows:{} ]]", nextRow, processedRows); 
+                }
+             
                 nextRow = 0;
-                if(processedRows % 100 == 0)
+                if(processedRows % 100 == 0) {
                     setProgress(job, querySource, progress++);
+                }
+                if(processedRows % 10000 == 0) {
+                    logger.info("[[ {} rows processed... ]]",processedRows); 
+                }
             }
             return result;
         } else {
+            logger.info("[[processedRows:{} ]]", processedRows);
           return null;
         }
       

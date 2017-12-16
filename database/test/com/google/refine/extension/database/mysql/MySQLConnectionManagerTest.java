@@ -33,7 +33,7 @@ public class MySQLConnectionManagerTest {
         dc.setDatabaseUser("root");
         dc.setUseSSL(false);
         try {
-            boolean conn = MySQLConnectionManager.testConnection(dc);
+            boolean conn = MySQLConnectionManager.getInstance().testConnection(dc);
             Assert.assertEquals(conn, true);
             
         } catch (DatabaseServiceException e) {
@@ -53,7 +53,7 @@ public class MySQLConnectionManagerTest {
         dc.setDatabaseUser("root");
         dc.setUseSSL(false);
         try {
-             Connection conn = MySQLConnectionManager.getConnection(dc, true);
+             Connection conn = MySQLConnectionManager.getInstance().getConnection(dc, true);
              Assert.assertNotNull(conn);
             
         } catch (DatabaseServiceException e) {
@@ -74,10 +74,10 @@ public class MySQLConnectionManagerTest {
         dc.setDatabaseUser("root");
         dc.setUseSSL(false);
         try {
-             Connection conn = MySQLConnectionManager.getConnection(dc, true);
+             Connection conn = MySQLConnectionManager.getInstance().getConnection(dc, true);
              Assert.assertNotNull(conn);
              
-             MySQLConnectionManager.shutdown();
+             MySQLConnectionManager.getInstance().shutdown();
              
              if(conn != null) {
                  Assert.assertEquals(conn.isClosed(), true);

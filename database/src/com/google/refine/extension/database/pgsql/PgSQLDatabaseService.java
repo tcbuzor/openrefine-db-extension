@@ -36,6 +36,7 @@ public class PgSQLDatabaseService extends DatabaseService {
         if (instance == null) {
             SQLType.registerSQLDriver(DB_NAME, DB_DRIVER);
             instance = new PgSQLDatabaseService();
+            logger.debug("PgSQLDatabaseService Instance: {}", instance);
         }
         return instance;
     }
@@ -43,7 +44,7 @@ public class PgSQLDatabaseService extends DatabaseService {
 
     @Override
     public boolean testConnection(DatabaseConfiguration dbConfig) throws DatabaseServiceException{
-        return PgSQLConnectionManager.testConnection(dbConfig);
+        return PgSQLConnectionManager.getInstance().testConnection(dbConfig);
       
     }
 
@@ -58,7 +59,7 @@ public class PgSQLDatabaseService extends DatabaseService {
             
         
         try {
-                Connection connection = PgSQLConnectionManager.getConnection(dbConfig, false);
+                Connection connection = PgSQLConnectionManager.getInstance().getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 PgResultSetMetaData metadata = (PgResultSetMetaData)queryResult.getMetaData();
@@ -100,7 +101,7 @@ public class PgSQLDatabaseService extends DatabaseService {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
         }finally {
-            PgSQLConnectionManager.shutdown();
+            PgSQLConnectionManager.getInstance().shutdown();
         }
     }
     
@@ -115,7 +116,7 @@ public class PgSQLDatabaseService extends DatabaseService {
        
         
         try {
-            Connection connection = PgSQLConnectionManager.getConnection(connectionInfo, true);
+            Connection connection = PgSQLConnectionManager.getInstance().getConnection(connectionInfo, true);
             if(connection != null) {
                 java.sql.DatabaseMetaData metadata;
 
@@ -137,8 +138,6 @@ public class PgSQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }finally {
-            PgSQLConnectionManager.shutdown();
         }
        
         return null;       
@@ -164,7 +163,7 @@ public class PgSQLDatabaseService extends DatabaseService {
     public ArrayList<DatabaseColumn> getColumns(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException{
         
         try {
-            Connection connection = PgSQLConnectionManager.getConnection(dbConfig, true);
+            Connection connection = PgSQLConnectionManager.getInstance().getConnection(dbConfig, true);
             Statement statement = connection.createStatement();
 
             ResultSet queryResult = statement.executeQuery(query);
@@ -183,8 +182,6 @@ public class PgSQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }finally {
-            PgSQLConnectionManager.shutdown();
         }
 
       
@@ -195,7 +192,7 @@ public class PgSQLDatabaseService extends DatabaseService {
             throws DatabaseServiceException {
        
         try {
-                Connection connection = PgSQLConnectionManager.getConnection(dbConfig, false);
+                Connection connection = PgSQLConnectionManager.getInstance().getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 statement.setFetchSize(10);
                 ResultSet queryResult = statement.executeQuery(query);
@@ -223,8 +220,6 @@ public class PgSQLDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }finally {
-            PgSQLConnectionManager.shutdown();
         }
     }
 
@@ -240,7 +235,7 @@ public class PgSQLDatabaseService extends DatabaseService {
     @Override
     public Connection getConnection(DatabaseConfiguration dbConfig)
             throws DatabaseServiceException {
-        return PgSQLConnectionManager.getConnection(dbConfig, true);
+        return PgSQLConnectionManager.getInstance().getConnection(dbConfig, true);
     }
 
 }

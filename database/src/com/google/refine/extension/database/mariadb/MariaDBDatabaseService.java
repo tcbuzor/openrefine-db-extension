@@ -40,13 +40,14 @@ public class MariaDBDatabaseService extends DatabaseService {
         if (instance == null) {
             SQLType.registerSQLDriver(DB_NAME, DB_DRIVER);
             instance = new MariaDBDatabaseService();
+            logger.debug("MariaDBDatabaseService Instance: {}", instance);
         }
         return instance;
     }
 
     @Override
     public boolean testConnection(DatabaseConfiguration dbConfig) throws DatabaseServiceException{
-        return MariaDBConnectionManager.testConnection(dbConfig);
+        return MariaDBConnectionManager.getInstance().testConnection(dbConfig);
       
     }
 
@@ -61,7 +62,7 @@ public class MariaDBDatabaseService extends DatabaseService {
             
         
         try {
-                Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
+                Connection connection = MariaDBConnectionManager.getInstance().getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 MariaDbResultSetMetaData metadata = (MariaDbResultSetMetaData)queryResult.getMetaData();
@@ -103,7 +104,7 @@ public class MariaDBDatabaseService extends DatabaseService {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
         } finally {
-            MariaDBConnectionManager.shutdown();
+            MariaDBConnectionManager.getInstance().shutdown();
         }
     }
     
@@ -116,7 +117,7 @@ public class MariaDBDatabaseService extends DatabaseService {
     private DatabaseInfo getMetadata(DatabaseConfiguration connectionInfo)  throws DatabaseServiceException {
      
         try {
-            Connection connection = MariaDBConnectionManager.getConnection(connectionInfo, true);
+            Connection connection = MariaDBConnectionManager.getInstance().getConnection(connectionInfo, true);
             if(connection != null) {
                 java.sql.DatabaseMetaData metadata;
 
@@ -138,9 +139,7 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }  finally {
-            MariaDBConnectionManager.shutdown();
-        }
+        } 
        
         return null;
         
@@ -167,7 +166,7 @@ public class MariaDBDatabaseService extends DatabaseService {
       
         try {
             
-            Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
+            Connection connection = MariaDBConnectionManager.getInstance().getConnection(dbConfig, true);
             Statement statement = connection.createStatement();
 
             ResultSet queryResult = statement.executeQuery(query);
@@ -186,10 +185,7 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        } finally {
-            MariaDBConnectionManager.shutdown();
         }
-
       
     }
 
@@ -199,7 +195,7 @@ public class MariaDBDatabaseService extends DatabaseService {
         
         
         try {
-                Connection connection = MariaDBConnectionManager.getConnection(dbConfig, true);
+                Connection connection = MariaDBConnectionManager.getInstance().getConnection(dbConfig, false);
                 Statement statement = connection.createStatement();
                 ResultSet queryResult = statement.executeQuery(query);
                 MariaDbResultSetMetaData metadata = (MariaDbResultSetMetaData)queryResult.getMetaData();
@@ -228,8 +224,6 @@ public class MariaDBDatabaseService extends DatabaseService {
         } catch (SQLException e) {
             logger.error("SQLException::", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }finally {
-            MariaDBConnectionManager.shutdown();
         }
     }
 
@@ -246,7 +240,7 @@ public class MariaDBDatabaseService extends DatabaseService {
     public Connection getConnection(DatabaseConfiguration dbConfig)
             throws DatabaseServiceException {
         // TODO Auto-generated method stub
-        return MariaDBConnectionManager.getConnection(dbConfig, true);
+        return MariaDBConnectionManager.getInstance().getConnection(dbConfig, true);
     }
   
 }

@@ -12,6 +12,7 @@ import com.google.refine.extension.database.DatabaseServiceException;
 import com.google.refine.extension.database.SQLType;
 
 
+
 public class PgSQLConnectionManager {
 
     static final Logger logger = LoggerFactory.getLogger("PgSQLConnectionManager");
@@ -20,51 +21,19 @@ public class PgSQLConnectionManager {
 
     private static PgSQLConnectionManager instance;
     
+  
+    
     /**
      * 
      * @param type
      * @param databaseConfiguration
      * @throws SQLException
      */
-    private PgSQLConnectionManager(SQLType dbType, DatabaseConfiguration databaseConfiguration) throws DatabaseServiceException {
- 
-        try {
-            this.type = dbType;
-            //logger.info("Acquiring Unmanaged Connection for {}",getDatabaseUrl(databaseConfiguration));
-            connection = getNewConnection(dbType, databaseConfiguration);
-            connection.close();
-        } catch (SQLException e) {
-            throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }
+    private PgSQLConnectionManager() {
+        type = SQLType.forName(PgSQLDatabaseService.DB_NAME);
 
     }
-    
-    /**
-     * 
-     * @param sqlType
-     * @param databaseConfiguration
-     * @return
-     * @throws SQLException 
-     */
-    private static Connection getNewConnection(SQLType dbType, DatabaseConfiguration databaseConfiguration)
-            throws DatabaseServiceException {
-
-        try {
-            Class.forName(dbType.getClassPath());
-            DriverManager.setLoginTimeout(10); 
-            return DriverManager.getConnection(
-                    getDatabaseUrl(databaseConfiguration),
-                    databaseConfiguration.getDatabaseUser(), 
-                    databaseConfiguration.getDatabasePassword());
-
-        } catch (ClassNotFoundException e) {
-            logger.error("Jdbc Driver not found", e);
-            throw new DatabaseServiceException(e.getMessage());
-        } catch (SQLException e) {
-            throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
-        }
-    
-    }
+  
     
     
     
@@ -75,15 +44,10 @@ public class PgSQLConnectionManager {
      *
      * @throws DatabaseServiceException
      */
-    private static PgSQLConnectionManager getInstance(DatabaseConfiguration databaseConfiguration) throws DatabaseServiceException {
+    public static PgSQLConnectionManager getInstance() throws DatabaseServiceException {
         if (instance == null) {
-
-            SQLType type = SQLType.forName(databaseConfiguration.getDatabaseType());
-            if (type == null) {
-                throw new DatabaseServiceException(databaseConfiguration.getDatabaseType()
-                        + " is not a valid JDBC Database type or has not been registered for use.");
-            }
-            instance = new PgSQLConnectionManager(type, databaseConfiguration);
+            logger.info("::Creating new PgSQL ConnectionManager ::");
+            instance = new PgSQLConnectionManager();
 
         }
         return instance;
@@ -104,13 +68,12 @@ public class PgSQLConnectionManager {
      * @param databaseConfiguration
      * @return
      */
-    public static boolean testConnection(DatabaseConfiguration databaseConfiguration) throws DatabaseServiceException{
+    public  boolean testConnection(DatabaseConfiguration databaseConfiguration) throws DatabaseServiceException{
         
         try {
                 boolean connResult = false;
-                PgSQLConnectionManager connectionManager = getInstance(databaseConfiguration);
-           
-                Connection conn = getNewConnection(connectionManager.type, databaseConfiguration);
+              
+                Connection conn = getConnection(databaseConfiguration, true);
                 if(conn != null) {
                     connResult = true;
                     conn.close();
@@ -131,44 +94,55 @@ public class PgSQLConnectionManager {
      *
      * @return connection from the pool
      */
-    public static Connection getConnection(DatabaseConfiguration databaseConfiguration, boolean newConnection) throws DatabaseServiceException{
+    public  Connection getConnection(DatabaseConfiguration databaseConfiguration, boolean forceNewConnection) throws DatabaseServiceException{
         try {
-            PgSQLConnectionManager connectionManager = getInstance(databaseConfiguration);
 
-            if (connectionManager.connection != null  && !newConnection) {
-                if (!connectionManager.connection.isClosed()) {
-                    return connectionManager.connection;
+           // logger.info("connection::{}, forceNewConnection: {}", connection, forceNewConnection);
+
+            if (connection != null && !forceNewConnection) {
+               // logger.info("connection closed::{}", connection.isClosed());
+                if (!connection.isClosed()) {
+                    if(logger.isDebugEnabled()){
+                        logger.debug("Returning existing connection::{}", connection); 
+                    }
+                    return connection;
                 }
             }
-            connectionManager.connection = getNewConnection(connectionManager.type, databaseConfiguration);
-            return connectionManager.connection;
 
+            Class.forName(type.getClassPath());
+            DriverManager.setLoginTimeout(10);
+            String dbURL = getDatabaseUrl(databaseConfiguration);
+            connection = DriverManager.getConnection(dbURL, databaseConfiguration.getDatabaseUser(),
+                    databaseConfiguration.getDatabasePassword());
+
+            logger.info("*** Acquired New  connection for ::{} **** ", dbURL);
+
+            return connection;
+
+            
+        } catch (ClassNotFoundException e) {
+            logger.error("Jdbc Driver not found", e);
+            throw new DatabaseServiceException(e.getMessage());
         } catch (SQLException e) {
             logger.error("SQLException::Couldn't get a Connection!", e);
             throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
         } 
     }
 
-    /**
-     * Shut down the connection pool.
-     * Should be called when the system is reloaded or goes down to prevent data loss.
-     */
-    public static void shutdown() {
-        if (instance == null) {
-           return;
-        }
-        
-        if (instance.connection != null) {
+ 
+    public  void shutdown() {
+
+        if (connection != null) {
             try {
-                instance.connection.close();
+                connection.close();
             }
             catch (SQLException e) {
                 logger.warn("Non-Managed connection could not be closed. Whoops!", e);
             }
         }
-        instance = null;
+ 
     }
-    
+  
    
     private static String getDatabaseUrl(DatabaseConfiguration dbConfig) {
        

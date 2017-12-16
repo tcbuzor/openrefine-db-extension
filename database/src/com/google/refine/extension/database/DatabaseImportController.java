@@ -369,14 +369,14 @@ public class DatabaseImportController implements ImportingController {
 
         JSONUtilities.safePut(options, "ignoreLines", 0); // number of blank lines at the beginning to ignore
         JSONUtilities.safePut(options, "headerLines", 1); // number of header lines
-
+    
         long startTime = System.currentTimeMillis() ;
         
         TabularImportingParserBase.readTable(
                 project,
                 metadata,
                 job,
-                new DBQueryResultImportReader(job, databaseService, querySource, columns, dbQueryInfo, 100),
+                new DBQueryResultImportReader(job, databaseService, querySource, columns, dbQueryInfo, getCreateBatchSize()),
                 querySource,
                 limit,
                 options,
@@ -391,6 +391,19 @@ public class DatabaseImportController implements ImportingController {
      
     }
     
+    private static int getCreateBatchSize() {
+        String propBatchSize = DatabaseModuleImpl.getImportCreateBatchSize();
+        int batchSize = 100;
+        if(propBatchSize != null && !propBatchSize.isEmpty()) {
+            try {
+                batchSize = Integer.parseInt(propBatchSize);
+            }catch(NumberFormatException nfe) {
+                
+            }
+        }
+        return batchSize;
+    }
+
     /**
      * @param request
      * @return
