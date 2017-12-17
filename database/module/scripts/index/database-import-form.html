@@ -103,7 +103,7 @@
 										<div class="panel-heading">Query Editor </div>
 										<div class="panel-body">
 											<fieldset style="padding:2px; margin-top:5px;">
-											    <textarea id="queryTextArea" bind="queryTextArea" class="pure-input-1 no-resize" placeholder="Enter your query" rows="10" >SELECT * from state</textarea>
+											    <textarea id="queryTextArea" bind="queryTextArea" class="pure-input-1 no-resize" placeholder="Enter your query" rows="10" >SELECT * FROM</textarea>
 											</fieldset>	
 										    <div class="alert alert-info" id="connectionParameterSpan"></div>
 											<!-- <select name="querySelect" id="queryHistorySelect" bind="queryHistorySelect" class="pure-input-1" style="padding-bottom:2px;">
@@ -113,7 +113,7 @@
 										
 									<div class="panel-footer">
 										<div class="pure-controls pure-input-1-2">
-									       <button type="button" bind="executeQueryButton" class="button-secondary pure-button">Preview Query Result</button>
+									       <button type="button" id="executeQueryBtn" bind="executeQueryButton" class="button-secondary pure-button">Preview Query Result</button>
 									    <!--    <button type="button" bind="saveQueryButton" class="button-success pure-button">Save Query</button> -->
 									    		
 									    </div>

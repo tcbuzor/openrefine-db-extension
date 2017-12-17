@@ -52,7 +52,7 @@ public class QueryCommandTest {
 
         try {
             when(response.getWriter()).thenReturn(pw);
-            QueryCommand connectCommand = new QueryCommand();
+            ExecuteQueryCommand connectCommand = new ExecuteQueryCommand();
            
             connectCommand.doPost(request, response);
             

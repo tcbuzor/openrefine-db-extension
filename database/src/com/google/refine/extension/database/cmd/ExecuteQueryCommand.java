@@ -48,7 +48,7 @@ import com.google.refine.extension.database.DatabaseServiceException;
 import com.google.refine.extension.database.model.DatabaseInfo;
 
 
-public class QueryCommand extends DatabaseCommand {
+public class ExecuteQueryCommand extends DatabaseCommand {
 
     static final Logger logger = LoggerFactory.getLogger("QueryCommand");
     

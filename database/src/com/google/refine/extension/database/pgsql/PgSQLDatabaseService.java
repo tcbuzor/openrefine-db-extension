@@ -19,6 +19,7 @@ import com.google.refine.extension.database.SQLType;
 import com.google.refine.extension.database.model.DatabaseColumn;
 import com.google.refine.extension.database.model.DatabaseInfo;
 import com.google.refine.extension.database.model.DatabaseRow;
+import com.google.refine.extension.database.mysql.MySQLConnectionManager;
 
 public class PgSQLDatabaseService extends DatabaseService {
     
@@ -236,6 +237,41 @@ public class PgSQLDatabaseService extends DatabaseService {
     public Connection getConnection(DatabaseConfiguration dbConfig)
             throws DatabaseServiceException {
         return PgSQLConnectionManager.getInstance().getConnection(dbConfig, true);
+    }
+
+    @Override
+    public DatabaseInfo testQuery(DatabaseConfiguration dbConfig, String query)
+            throws DatabaseServiceException {
+        Statement statement  = null;
+        ResultSet queryResult = null;
+        try {
+            Connection connection = MySQLConnectionManager.getInstance().getConnection(dbConfig, true);
+            statement = connection.createStatement();
+            queryResult = statement.executeQuery(query);
+
+            DatabaseInfo dbInfo = new DatabaseInfo();
+
+            return dbInfo;
+
+        } catch (SQLException e) {
+            logger.error("SQLException::", e);
+            throw new DatabaseServiceException(true, e.getSQLState(), e.getErrorCode(), e.getMessage());
+        } finally {
+            try {
+                if (queryResult != null) {
+                    queryResult.close();
+
+                }
+                if (statement != null) { 
+                    statement.close();
+
+                }
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            //MySQLConnectionManager.getInstance().shutdown();
+        }
     }
 
 }

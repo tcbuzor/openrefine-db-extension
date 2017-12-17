@@ -1,7 +1,8 @@
 {
   "database-import": {
 		"title": "Database Servers",
-		"preparing": "Preparing ...",
+		"preparing": "Preparing Result ...",
+		"checking": "Validating Query ...",
 		"creating": "Creating project ..."
    },
    "database-source": {

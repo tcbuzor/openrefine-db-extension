@@ -83,6 +83,8 @@ public abstract class DatabaseService {
     public abstract DatabaseInfo connect(DatabaseConfiguration dbConfig) throws  DatabaseServiceException;
     
     public abstract DatabaseInfo executeQuery(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException;
+    
+    public abstract DatabaseInfo testQuery(DatabaseConfiguration dbConfig, String query) throws DatabaseServiceException;
 
     public abstract String buildLimitQuery(Integer limit, Integer offset, String query);
     

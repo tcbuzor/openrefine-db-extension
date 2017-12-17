@@ -200,7 +200,9 @@ Refine.DatabaseImportController.prototype._showParsingPanel = function() {
 	  
 	  this._parsingPanelElmts.createProjectButton.click(function() { self._createProject(); });
 	  this._parsingPanelElmts.previewButton.click(function() { self._updatePreview(); });
-	  this._parsingPanelElmts.projectNameInput[0].value = this._queryInfo.connectionName + "_" + this._queryInfo.databaseUser;
+	  //alert("datetime::" + $.now());
+	  //this._parsingPanelElmts.projectNameInput[0].value = this._queryInfo.connectionName + "_" + this._queryInfo.databaseUser + "_" + $.now();
+	  this._parsingPanelElmts.projectNameInput[0].value = this._queryInfo.databaseServer +  "_" + this._queryInfo.initialDatabase + "_" + $.now();
 
 	  
 	  if (this._options.limit > 0) {
@@ -267,9 +269,11 @@ Refine.DatabaseImportController.prototype._updatePreview = function() {
 	          new Refine.PreviewTable(projectData, self._parsingPanelElmts.dataPanel.unbind().empty());
 	        });
 	      } else {
-	        self._parsingPanelElmts.progressPanel.hide();
+	    	    alert(result.message);
+	        //self._parsingPanelElmts.progressPanel.hide();
 	        alert('Errors:\n' + 
 	          (result.message) ? result.message : Refine.CreateProjectUI.composeErrorMessage(job));
+	       
 	      }
 	    },
 	    "json"

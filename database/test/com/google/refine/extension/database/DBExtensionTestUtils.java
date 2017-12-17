@@ -26,7 +26,7 @@ public class DBExtensionTestUtils {
     private static final String DB_NAME_PGSQL = "openrefine";
     
     
-    private static final int SAMPLE_SIZE = 700000;
+    private static final int SAMPLE_SIZE = 500000;
     private static final int BATCH_SIZE = 1000;
     
     private static Random rand = new Random();
@@ -238,7 +238,7 @@ public class DBExtensionTestUtils {
     
     public static void main(String[] args) {
         DBExtensionTestUtils testUtil = new DBExtensionTestUtils();
-        testUtil.generatePgSQLTestData();
+       // testUtil.generatePgSQLTestData();
         testUtil.generateMySQLTestData();
     }
 

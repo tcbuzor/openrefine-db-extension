@@ -54,7 +54,7 @@ public class DatabaseModuleImpl extends ButterflyModuleImpl implements Jsonizabl
     private void readModuleProperty() {
         // The module path
         File f = getPath();
-        logger.info("Module getPath(): {}", f.getPath());
+        logger.debug("Module getPath(): {}", f.getPath());
 
         // Load our custom properties.
         File modFile = new File(f,"MOD-INF");

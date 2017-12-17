@@ -126,7 +126,7 @@ DatabaseExtension.handleConnectClicked = function(connectionName) {
 								  $( "#currentDatabasePortInput" ).val(databaseConfig.databasePort);
 								  $( "#currentInitialDatabaseInput" ).val(databaseConfig.initialDatabase);
 								  
-								  var connectionParam = "Connection URL : "
+								  var connectionParam = "Connection: "
 									  	+ "jdbc:"
 										+ databaseConfig.databaseType + "://"
 										+ databaseConfig.databaseServer + ":"

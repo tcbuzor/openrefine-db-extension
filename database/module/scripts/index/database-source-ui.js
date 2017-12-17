@@ -198,7 +198,29 @@ Refine.DatabaseSourceUI.prototype._editConnection = function(connectionInfo) {
 
 Refine.DatabaseSourceUI.prototype._executeQuery = function(jdbcQueryInfo) {
 	var self = this;
-	self._controller.startImportingDocument(jdbcQueryInfo);
+	//remove start line
+	
+	var dismiss = DialogSystem.showBusy($.i18n._('database-import')["checking"]);
+	//$("#executeQueryBtn").text('Please wait ...').attr('disabled','disabled');
+    
+	$.post(
+	  "command/database/test-query",
+	  jdbcQueryInfo,
+	  function(jdbcConnectionResult) {
+		 // $("#executeQueryBtn").text('Preview Query Result').removeAttr('disabled');
+		  dismiss();
+		  self._controller.startImportingDocument(jdbcQueryInfo);
+	  		
+	  },
+	  "json"
+	).fail(function( jqXhr, textStatus, errorThrown ){
+		//$("#executeQueryBtn").text('Preview Query Result').removeAttr('disabled');
+		dismiss();
+        alert( textStatus + ':' + errorThrown );
+    });
+    //remove end line
+	
+	//self._controller.startImportingDocument(jdbcQueryInfo);
 }
 
 Refine.DatabaseSourceUI.prototype._saveConnection = function(jdbcConnectionInfo) {	
