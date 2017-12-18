@@ -13,6 +13,8 @@
 		"alert-connection-name": "You must specify a Connection Name",
 		"alert-initial-database": "You must specify an Initial Database",
 		"alert-query": "You must specify a valid Query",
+		"alert-invalid-query-keyword": "Query cannot contain Data Manipulation keyword:",
+		"alert-invalid-query-select": "Query must start with SELECT Keyword",
 		"form-validation-failure" : "New Connection From is Invalid!",
 		"alert-connection-edit": "Connection edited successfully",
 		"connectionNameLabel": "Name:",

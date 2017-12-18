@@ -126,15 +126,24 @@ Refine.DatabaseSourceUI.prototype.attachUI = function(body) {
 	    jdbcQueryInfo.databasePassword = $( "#currentDatabasePasswordInput" ).val();
 	    jdbcQueryInfo.initialDatabase = $( "#currentInitialDatabaseInput" ).val();
 	    jdbcQueryInfo.query = $.trim($( "#queryTextArea" ).val()); 
-	   
-	    if(jdbcQueryInfo.query && jdbcQueryInfo.query.length > 0 ) {
-	    	   self._executeQuery(jdbcQueryInfo);
-	    }else{
-	    	  window.alert($.i18n._('database-source')["alert-query"]);
+	    
+//	    if(jdbcQueryInfo.query && jdbcQueryInfo.query.length > 0 ) {
+//      	   self._executeQuery(jdbcQueryInfo);
+//	    }else{
+//	    	  window.alert($.i18n._('database-source')["alert-query"]);
+//	    }
+	    
+	    if(self.validateQuery(jdbcQueryInfo.query)) {
+	    		self._executeQuery(jdbcQueryInfo);
 	    }
+	    
+	    
+	    
 	    
   });
 
+
+  
   this._elmts.editConnectionButton.click(function(evt) {
 	  
 	  if(self._validateNewConnectionForm() == true){
@@ -163,6 +172,61 @@ Refine.DatabaseSourceUI.prototype.attachUI = function(body) {
 Refine.DatabaseSourceUI.prototype.focus = function() {
 };
 
+
+Refine.DatabaseSourceUI.prototype.validateQuery = function(query) {
+	 //alert("query::" + query);
+	 if(!query || query.length <= 0 ) {
+		 window.alert($.i18n._('database-source')["alert-query"]);
+		 return false;
+	 }
+	
+	 var allCapsQuery = query.toUpperCase();
+	
+	 if(allCapsQuery.indexOf('DROP') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " DROP");
+		 return false;
+	 }else if(allCapsQuery.indexOf('TRUNCATE') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " TRUNCATE");
+		 return false;
+	 }else if(allCapsQuery.indexOf('DELETE') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " DELETE");
+		 return false;
+	 }else if(allCapsQuery.indexOf('ROLLBACK') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " ROLLBACK");
+		 return false;
+	 }else if(allCapsQuery.indexOf('SHUTDOWN') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " SHUTDOWN");
+		 return false;
+	 }else if(allCapsQuery.indexOf('INSERT') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " INSERT");
+		 return false;
+	 }else if(allCapsQuery.indexOf('ALTER') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " ALTER");
+		 return false;
+	 }else if(allCapsQuery.indexOf('UPDATE') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " UPDATE");
+		 return false;
+	 }else if(allCapsQuery.indexOf('LIMIT') > -1){
+		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"] + " LIMIT");
+		 return false;
+	 }
+	 
+//	 if ((allCapsQuery.indexOf('DROP') > -1)  || (allCapsQuery.indexOf('TRUNCATE') > -1) ||
+//			 (allCapsQuery.indexOf('DELETE') > -1) || (allCapsQuery.indexOf('ROLLBACK') > -1) 
+//			 || (allCapsQuery.indexOf('SHUTDOWN') > -1) || (allCapsQuery.indexOf('INSERT') > -1)
+//			 || (allCapsQuery.indexOf('ALTER') > -1) || (allCapsQuery.indexOf('UPDATE') > -1))
+//	 {
+//		 window.alert($.i18n._('database-source')["alert-invalid-query-keyword"]);
+//		 return false;
+//	 }
+	 
+	 if(!allCapsQuery.startsWith('SELECT')) {
+		 window.alert($.i18n._('database-source')["alert-invalid-query-select"]);
+		 return false;
+	 }
+
+	 return true;
+};
 
 Refine.DatabaseSourceUI.prototype._editConnection = function(connectionInfo) {	
 	//alert("database user:" + connectionInfo.databaseUser);
