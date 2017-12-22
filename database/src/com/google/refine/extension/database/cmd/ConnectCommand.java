@@ -75,7 +75,8 @@ public class ConnectCommand extends DatabaseCommand {
                         .connect(databaseConfiguration);
                 response.setStatus(HttpStatus.SC_OK);
                 writer.object();
-                writer.key("code"); writer.value("ok");
+                writer.key("code"); 
+                writer.value("ok");
                 String databaseInfoString = mapperObj.writeValueAsString(databaseInfo);
                 writer.key("databaseInfo"); 
                 writer.value(databaseInfoString);

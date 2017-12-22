@@ -390,7 +390,7 @@ Refine.DatabaseSourceUI.prototype._connect = function(jdbcConnectionInfo) {
 			  $( "#currentDatabasePortInput" ).val(jdbcConnectionInfo.databasePort);
 			  $( "#currentInitialDatabaseInput" ).val(jdbcConnectionInfo.initialDatabase);
 			  
-			  var connectionParam = "Connection URL : "
+			  var connectionParam = "Connection :: "
 				  	+ "jdbc:"
 					+ jdbcConnectionInfo.databaseType + "://"
 					+ jdbcConnectionInfo.databaseServer + ":"

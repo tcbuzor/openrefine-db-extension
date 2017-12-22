@@ -42,19 +42,7 @@ $(function(){
                     DatabaseExtension.handleSavedConnectionClicked(key,  $(this).text());
                     
                 },
-//                items: {
-//                    "edit": 	   {name: "Edit",    icon: function(){
-//                        return 'context-menu-icon context-menu-icon-edit';
-//                    }},
-//                    "delete":   {name: "Delete" , icon: function(){
-//                        return 'context-menu-icon context-menu-icon-delete';
-//                    }},
-//                    "sep1": "---------",
-//                    "connect": {name: "Connect", icon: function(){
-//                        return 'context-menu-icon context-menu-icon-connect';
-//                    }},
-//                    "dummy":  {name: "", icon: ""}
-//                }
+
                 items: {
                     "edit": 	   {name: " Edit "},
                     "sep0": "",
@@ -126,7 +114,7 @@ DatabaseExtension.handleConnectClicked = function(connectionName) {
 								  $( "#currentDatabasePortInput" ).val(databaseConfig.databasePort);
 								  $( "#currentInitialDatabaseInput" ).val(databaseConfig.initialDatabase);
 								  
-								  var connectionParam = "Connection: "
+								  var connectionParam = "Connection[" + databaseConfig.connectionName + "] :: "
 									  	+ "jdbc:"
 										+ databaseConfig.databaseType + "://"
 										+ databaseConfig.databaseServer + ":"

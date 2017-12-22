@@ -17,5 +17,6 @@
 	<classpathentry kind="lib" path="/OpenRefine/main/webapp/WEB-INF/lib/httpcore-4.2.4.jar"/>
 	<classpathentry kind="lib" path="/OpenRefine/main/webapp/WEB-INF/lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="module/MOD-INF/lib/jackson-core-asl-1.9.13.jar"/>
+	<classpathentry kind="lib" path="module/MOD-INF/lib/jasypt-1.9.2.jar"/>
 	<classpathentry kind="output" path="module/MOD-INF/classes"/>
 </classpath>

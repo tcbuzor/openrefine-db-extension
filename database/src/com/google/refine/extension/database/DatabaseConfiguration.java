@@ -94,7 +94,7 @@ public class DatabaseConfiguration {
     public String toString() {
         return "DatabaseConfiguration [connectionName=" + connectionName + ", databaseType=" + databaseType
                 + ", databaseHost=" + databaseHost + ", databasePort=" + databasePort + ", databaseUser=" + databaseUser
-                + ", databasePassword=" + databasePassword + ", databaseName=" + databaseName + ", databaseSchema="
+                + ", databaseName=" + databaseName + ", databaseSchema="
                 + databaseSchema + ", useSSL=" + useSSL + "]";
     }
     

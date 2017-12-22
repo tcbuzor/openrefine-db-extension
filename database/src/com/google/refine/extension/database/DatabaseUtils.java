@@ -26,6 +26,8 @@ public class DatabaseUtils {
     private final static String SETTINGS_FILE_NAME = ".saved-db-connections.json";
     public final static String SAVED_CONNECTION_KEY = "savedConnections";
     
+    private static SimpleTextEncryptor textEncryptor = new SimpleTextEncryptor("Aa1Gb@tY7_Y");
+    
     /**
      * GET saved connections
      * @return
@@ -51,12 +53,14 @@ public class DatabaseUtils {
                   SavedConnectionContainer sc = new SavedConnectionContainer(new ArrayList<DatabaseConfiguration>());
                   mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filename), sc);
                   return sc.getSavedConnections();
+                  //return decryptAll(sc.getSavedConnections());
                     
                 }
              
             }
             logger.info("saved connections file  found {}", filename);
             SavedConnectionContainer savedConnectionContainer = mapper.readValue(new File(filename), SavedConnectionContainer.class);
+            //return decryptAll(savedConnectionContainer.getSavedConnections());
             return savedConnectionContainer.getSavedConnections();
            
         } catch (JsonParseException e) {
@@ -70,7 +74,9 @@ public class DatabaseUtils {
     }
     
    
-    
+   
+
+
     /**
      * GET one saved connection
      * @param connectionName
@@ -84,12 +90,33 @@ public class DatabaseUtils {
             logger.info("Saved Connection  : {}", dc.getConnectionName()); 
             if (dc.getConnectionName().equalsIgnoreCase(connectionName.trim())) {
                 logger.info("Saved Connection Found : {}", dc);  
+                //dc.setDatabasePassword(decrypt(dc.getDatabasePassword()));
                 return dc;
             }
         }
 
         return null;
      }
+     
+     public static String encrypt(String plainPassword) {
+         return textEncryptor.encrypt(plainPassword);
+     }
+     
+     public static String decrypt(String encodedPassword) {
+         return textEncryptor.decrypt(encodedPassword);
+     }
+     
+     public static List<DatabaseConfiguration> decryptAll(List<DatabaseConfiguration> savedConnections) {
+         List<DatabaseConfiguration> dbConfigs = new ArrayList<DatabaseConfiguration>(savedConnections.size());
+         
+         for(DatabaseConfiguration d: savedConnections) {
+             d.setDatabasePassword(decrypt(d.getDatabasePassword()));
+             dbConfigs.add(d);
+             
+         }
+         return dbConfigs;
+     }
+     
     
      /**
       * ADD to saved connections
@@ -98,6 +125,10 @@ public class DatabaseUtils {
      public static void addToSavedConnections(DatabaseConfiguration dbConfig){
          
          try {
+          
+//             String encPassword = encrypt(dbConfig.getDatabasePassword());
+//             dbConfig.setDatabasePassword(encPassword);
+             
              ObjectMapper mapper = new ObjectMapper();
              String savedConnectionFile = getExtensionFilePath();
              SavedConnectionContainer savedConnectionContainer = mapper.readValue(new File(savedConnectionFile), SavedConnectionContainer.class);

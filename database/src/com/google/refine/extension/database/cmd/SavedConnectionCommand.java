@@ -39,12 +39,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.http.HttpStatus;
 import org.json.JSONException;
 import org.json.JSONWriter;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.refine.extension.database.DatabaseConfiguration;
-
 import com.google.refine.extension.database.DatabaseUtils;
 
 
@@ -59,7 +57,6 @@ public class SavedConnectionCommand extends DatabaseCommand {
         logger.info("SavedConnectionCommand::Get::connectionName::{}", request.getParameter("connectionName"));
         
         String connectionName = request.getParameter("connectionName");
-       
         try {
             response.setCharacterEncoding("UTF-8");
             response.setHeader("Content-Type", "application/json");
@@ -140,7 +137,17 @@ public class SavedConnectionCommand extends DatabaseCommand {
             writer.value(savedConnection.getDatabaseName());
 
             writer.key("databasePassword");
-            writer.value(savedConnection.getDatabasePassword());
+           
+            //
+            String dbPasswd = savedConnection.getDatabasePassword();
+            if(dbPasswd != null && !dbPasswd.isEmpty()) {
+                dbPasswd = DatabaseUtils.decrypt(savedConnection.getDatabasePassword());
+                //logger.info("Decrypted Password::" + dbPasswd);
+            }
+            writer.value(dbPasswd);
+            //
+            
+           // writer.value(savedConnection.getDatabasePassword());
 
             writer.key("databaseSchema");
             writer.value(savedConnection.getDatabaseSchema());
@@ -199,8 +206,14 @@ public class SavedConnectionCommand extends DatabaseCommand {
                 writer.value(dbConfig.getDatabaseName());
 
                 writer.key("databasePassword");
-                writer.value(dbConfig.getDatabasePassword());
-
+                
+                String dbPasswd = dbConfig.getDatabasePassword();
+                if(dbPasswd != null && !dbPasswd.isEmpty()) {
+                    dbPasswd = DatabaseUtils.decrypt(dbConfig.getDatabasePassword());
+                }
+               // writer.value(dbConfig.getDatabasePassword());
+                writer.value(dbPasswd);
+                
                 writer.key("databaseSchema");
                 writer.value(dbConfig.getDatabaseSchema());
                 
@@ -219,6 +232,9 @@ public class SavedConnectionCommand extends DatabaseCommand {
         }
     }
 
+    /**
+     * Add a new Saved JDBC connection configuration
+     */
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -226,6 +242,7 @@ public class SavedConnectionCommand extends DatabaseCommand {
         logger.info("SavedConnectionCommand::Post");
         
         DatabaseConfiguration jdbcConfig = getJdbcConfiguration(request);
+        
 
         response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Type", "application/json");
@@ -241,6 +258,12 @@ public class SavedConnectionCommand extends DatabaseCommand {
             response.sendError(HttpStatus.SC_BAD_REQUEST, "Connection with name " + jdbcConfig.getConnectionName() + " already exists!");
             response.flushBuffer();
             return;
+        }
+        
+      
+        if(jdbcConfig.getDatabasePassword() != null) {
+            logger.info("SavedConnectionCommand::Post::password::{}", jdbcConfig.getDatabasePassword());
+           jdbcConfig.setDatabasePassword(DatabaseUtils.encrypt(jdbcConfig.getDatabasePassword()));
         }
         
         DatabaseUtils.addToSavedConnections(jdbcConfig);
@@ -291,6 +314,10 @@ public class SavedConnectionCommand extends DatabaseCommand {
        
        
         logger.info("SavedConnectionCommand::PUT Connection: {}", jdbcConfig.getConnectionName());
+        
+        if(jdbcConfig.getDatabasePassword() != null) {
+            jdbcConfig.setDatabasePassword(DatabaseUtils.encrypt(jdbcConfig.getDatabasePassword()));
+         }
         
         DatabaseUtils.editSavedConnections(jdbcConfig);
        
