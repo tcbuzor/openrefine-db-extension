@@ -1,7 +1,7 @@
 
 OpenRefine Database Extension
 
-This project is an extension for Google Refine that provides a way to import data from a sql database using JDBC.
+This project is an extension for OpenRefine that provides a way to import data from a sql database using JDBC.
 
 
 INSTALL
