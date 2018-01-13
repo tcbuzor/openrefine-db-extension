@@ -1,35 +1,31 @@
 /*
-
-Copyright 2011, Google Inc.
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-    * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-    * Neither the name of Google Inc. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,           
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY           
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-*/
+ * Copyright (c) 2017, Tony Opara
+ *        All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ * - Redistributions of source code must retain the above copyright notice, this 
+ *   list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * 
+ * Neither the name of Google nor the names of its contributors may be used to 
+ * endorse or promote products derived from this software without specific 
+ * prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 package com.google.refine.extension.database;
 
@@ -56,7 +52,6 @@ import com.google.refine.commands.HttpUtilities;
 import com.google.refine.extension.database.model.DatabaseColumn;
 import com.google.refine.extension.database.model.DatabaseQueryInfo;
 import com.google.refine.importers.TabularImportingParserBase;
-import com.google.refine.importing.DefaultImportingController;
 import com.google.refine.importing.ImportingController;
 import com.google.refine.importing.ImportingJob;
 import com.google.refine.importing.ImportingManager;
@@ -67,7 +62,7 @@ import com.google.refine.util.ParsingUtilities;
 
 public class DatabaseImportController implements ImportingController {
     
-    final static Logger logger = LoggerFactory.getLogger("DatabaseImportController");
+    private static final Logger logger = LoggerFactory.getLogger("DatabaseImportController");
     protected RefineServlet servlet;
     public static int DEFAULT_PREVIEW_LIMIT = 100; 
     public static String OPTIONS_KEY = "options";
@@ -86,23 +81,28 @@ public class DatabaseImportController implements ImportingController {
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
         throws ServletException, IOException {
-        logger.info("DatabaseImportController::doPost::databaseName::{}", request.getParameter("databaseName"));
-
+        if(logger.isDebugEnabled()){
+            logger.debug("doPost Query String::{}", request.getQueryString());
+        }
         response.setCharacterEncoding("UTF-8");
         Properties parameters = ParsingUtilities.parseUrlParameters(request);
         
         String subCommand = parameters.getProperty("subCommand");
         
-        logger.info("DatabaseImportController::doPost::subCommand::{}", subCommand);
+        if(logger.isDebugEnabled()){
+            logger.info("doPost::subCommand::{}", subCommand);
+        }
         
         if ("initialize-parser-ui".equals(subCommand)) {
             doInitializeParserUI(request, response, parameters);
         } else if ("parse-preview".equals(subCommand)) {
             try {
+                
                 doParsePreview(request, response, parameters);
+                
             } catch (DatabaseServiceException e) {
-                logger.error("DatabaseImportController::doPost::DatabaseServiceException::{}", e);
-                HttpUtilities.respond(response, "error", e.getMessage());
+                logger.error("doPost::DatabaseServiceException::{}", e);
+                HttpUtilities.respond(response, "error", getDbServiceException(e));
             }
         } else if ("create-project".equals(subCommand)) {
             doCreateProject(request, response, parameters);
@@ -112,6 +112,19 @@ public class DatabaseImportController implements ImportingController {
 
     }
  
+    private String getDbServiceException(Exception ex) {
+        String message = "";
+        if(ex instanceof DatabaseServiceException) {
+            DatabaseServiceException dbEx = (DatabaseServiceException) ex;
+            if(dbEx.isSqlException()) {
+                message = message + dbEx.getSqlCode() + " " +  dbEx.getSqlState();
+            }
+        }
+        message = message + ex.getMessage();
+        
+        return message;
+    }
+
     /**
      * 
      * @param request
@@ -122,7 +135,10 @@ public class DatabaseImportController implements ImportingController {
      */
     private void doInitializeParserUI(HttpServletRequest request, HttpServletResponse response, Properties parameters)
             throws ServletException, IOException {
-        logger.info("::doInitializeParserUI::");
+        if(logger.isDebugEnabled()) {
+            logger.debug("::doInitializeParserUI::");
+        }
+        
 
         JSONObject result = new JSONObject();
         JSONObject options = new JSONObject();
@@ -132,8 +148,10 @@ public class DatabaseImportController implements ImportingController {
         JSONUtilities.safePut(options, "skipDataLines", 0); 
         JSONUtilities.safePut(options, "storeBlankRows", true);
         JSONUtilities.safePut(options, "storeBlankCellsAsNulls", true);
-
-        logger.info("doInitializeParserUI:::{}", result.toString());
+        if(logger.isDebugEnabled()) {
+            logger.debug("doInitializeParserUI:::{}", result.toString());
+        }
+       
         HttpUtilities.respond(response, result.toString());
 
     }
@@ -151,8 +169,11 @@ public class DatabaseImportController implements ImportingController {
     private void doParsePreview(
             HttpServletRequest request, HttpServletResponse response, Properties parameters)
                 throws ServletException, IOException, DatabaseServiceException {
-            logger.info("DatabaseImportController::doParsePreview::JobID::{}", parameters.getProperty("jobID"));
-          
+            if(logger.isDebugEnabled()) {
+                logger.debug("JobID::{}", parameters.getProperty("jobID"));
+            } 
+           
+            
             long jobID = Long.parseLong(parameters.getProperty("jobID"));
             ImportingJob job = ImportingManager.getJob(jobID);
             if (job == null) {
@@ -160,7 +181,10 @@ public class DatabaseImportController implements ImportingController {
                 return;
             }
           
+            
             DatabaseQueryInfo databaseQueryInfo = getQueryInfo(request);
+          
+            
             if(databaseQueryInfo == null) {
                 HttpUtilities.respond(response, "error", "Invalid or missing Query Info");
             }
@@ -183,6 +207,8 @@ public class DatabaseImportController implements ImportingController {
                     optionObj,
                     exceptions
                 );
+//                String exStr = getExceptionString(exceptions);
+//                logger.info("exceptions::" + exStr);
                 
                 Writer w = response.getWriter();
                 JSONWriter writer = new JSONWriter(w);
@@ -190,13 +216,16 @@ public class DatabaseImportController implements ImportingController {
                     writer.object();
                     if (exceptions.size() == 0) {
                         job.project.update(); // update all internal models, indexes, caches, etc.
-                        writer.key("status"); writer.value("ok");
+                        writer.key("status"); 
+                        writer.value("ok");
                     } else {
-                        writer.key("status"); writer.value("error");
-                        writer.key("errors");
-                        writer.array();
-                        DefaultImportingController.writeErrors(writer, exceptions);
-                        writer.endArray();
+                        writer.key("status"); 
+                        writer.value("error");
+                        writer.key("message");
+                        writer.value(getExceptionString(exceptions));
+//                        writer.array();
+//                        writeErrors(writer, exceptions);
+//                        writer.endArray();
                     }
                     writer.endObject();
                 } catch (JSONException e) {
@@ -213,6 +242,17 @@ public class DatabaseImportController implements ImportingController {
                 job.updating = false;
             }
         }
+
+
+
+    private String getExceptionString(List<Exception> exceptions) {
+        String ex = "";
+        for(Exception e: exceptions) {
+            ex = ex + e.getLocalizedMessage() + "\n";
+        }
+        // TODO Auto-generated method stub
+        return ex;
+    }
 
     /**
      * 
@@ -234,6 +274,7 @@ public class DatabaseImportController implements ImportingController {
             JSONObject options,
             List<Exception> exceptions) throws DatabaseServiceException{
         
+       
         DatabaseService databaseService = DatabaseService.get(dbQueryInfo.getDbConfig().getDatabaseType());
         String querySource = getQuerySource(dbQueryInfo);
         
@@ -270,7 +311,9 @@ public class DatabaseImportController implements ImportingController {
      */
     private void doCreateProject(HttpServletRequest request, HttpServletResponse response, Properties parameters)
             throws ServletException, IOException{
-            logger.info("DatabaseImportController::doCreateProject:::{}", parameters.getProperty("jobID"));
+            if(logger.isDebugEnabled()) {
+                logger.debug("DatabaseImportController::doCreateProject:::{}", parameters.getProperty("jobID"));
+            }
             
             long jobID = Long.parseLong(parameters.getProperty("jobID"));
             final ImportingJob job = ImportingManager.getJob(jobID);
@@ -313,7 +356,7 @@ public class DatabaseImportController implements ImportingController {
                                 exceptions
                             );
                         } catch (DatabaseServiceException e) {
-                            logger.info("DatabaseImportController::doCreateProject:::run{}", e);
+                            logger.error("DatabaseImportController::doCreateProject:::run{}", e);
                            // throw new RuntimeException("DatabaseServiceException::", e);
                         }
                       
@@ -360,6 +403,7 @@ public class DatabaseImportController implements ImportingController {
             JSONObject options,
             List<Exception> exceptions) throws DatabaseServiceException{
         
+        
         DatabaseService databaseService = DatabaseService.get(dbQueryInfo.getDbConfig().getDatabaseType());
         String querySource = getQuerySource(dbQueryInfo);
         
@@ -384,8 +428,9 @@ public class DatabaseImportController implements ImportingController {
             );
         
         long endTime = System.currentTimeMillis() ;
-        
-        logger.info("Execution Time: {}", endTime - startTime);
+        if(logger.isDebugEnabled()) {
+            logger.debug("Execution Time: {}", endTime - startTime);
+        }
         
         setProgress(job, querySource, 100);
      
@@ -420,12 +465,13 @@ public class DatabaseImportController implements ImportingController {
         jdbcConfig.setDatabaseSchema(request.getParameter("initialSchema"));
         
         String query = request.getParameter("query");
-        
+        logger.info("jdbcConfig::{}, query::{}", jdbcConfig, query);
         if (jdbcConfig.getDatabaseHost() == null || jdbcConfig.getDatabaseName() == null
                 || jdbcConfig.getDatabasePassword() == null || jdbcConfig.getDatabaseType() == null
                 || jdbcConfig.getDatabaseUser() == null || query == null) {
-            
-            logger.info("Missing Database Configuration::{}", jdbcConfig);
+            if(logger.isDebugEnabled()) {
+                logger.debug("Missing Database Configuration::{}", jdbcConfig);
+            }
             return null;
         }
         

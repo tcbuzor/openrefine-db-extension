@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Thomas F. Morris
+ * Copyright (c) 2017, Tony Opara
  *        All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -50,17 +50,16 @@ import com.google.refine.extension.database.model.DatabaseInfo;
 
 public class ConnectCommand extends DatabaseCommand {
 
-    static final Logger logger = LoggerFactory.getLogger("ConnectCommand");
+    private static final Logger logger = LoggerFactory.getLogger("ConnectCommand");
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        logger.info("ConnectCommand::Post");
         DatabaseConfiguration databaseConfiguration = getJdbcConfiguration(request);
- 
-        logger.info("ConnectCommand::Post::{}", databaseConfiguration);
-        
+        if(logger.isDebugEnabled()) {
+            logger.debug("ConnectCommand::Post::{}", databaseConfiguration);
+        }
        // ProjectManager.singleton.setBusy(true);
         try {
         
@@ -73,11 +72,11 @@ public class ConnectCommand extends DatabaseCommand {
             try {
                 DatabaseInfo databaseInfo = DatabaseService.get(databaseConfiguration.getDatabaseType())
                         .connect(databaseConfiguration);
+                String databaseInfoString = mapperObj.writeValueAsString(databaseInfo);
                 response.setStatus(HttpStatus.SC_OK);
                 writer.object();
                 writer.key("code"); 
                 writer.value("ok");
-                String databaseInfoString = mapperObj.writeValueAsString(databaseInfo);
                 writer.key("databaseInfo"); 
                 writer.value(databaseInfoString);
               
@@ -96,9 +95,10 @@ public class ConnectCommand extends DatabaseCommand {
         } catch (Exception e) {
             logger.error("ConnectCommand::Post::Exception::{}", e);
             throw new ServletException(e);
-        } finally {
-           // ProjectManager.singleton.setBusy(false);
-        }
+        } 
+//        finally {
+//           // ProjectManager.singleton.setBusy(false);
+//        }
 
         
     }

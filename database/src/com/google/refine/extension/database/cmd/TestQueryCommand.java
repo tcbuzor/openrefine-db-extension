@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Thomas F. Morris
+ * Copyright (c) 2017, Tony Opara
  *        All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -50,16 +50,19 @@ import com.google.refine.extension.database.model.DatabaseInfo;
 
 public class TestQueryCommand extends DatabaseCommand {
 
-    static final Logger logger = LoggerFactory.getLogger("TestQueryCommand");
+    private static final Logger logger = LoggerFactory.getLogger("TestQueryCommand");
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        logger.info("TestQueryCommand::Post");
-        
+       
         DatabaseConfiguration dbConfig = getJdbcConfiguration(request);
         String query = request.getParameter("query");
-        logger.info("TestQueryCommand::Post::DatabaseConfiguration::{}::Query::{} " ,dbConfig, query);
+        
+        if(logger.isDebugEnabled()) {
+            logger.debug("TestQueryCommand::Post::DatabaseConfiguration::{}::Query::{} " ,dbConfig, query);
+        }
+      
         
         //ProjectManager.singleton.setBusy(true);
         try {
@@ -76,7 +79,9 @@ public class TestQueryCommand extends DatabaseCommand {
                
                 response.setStatus(HttpStatus.SC_OK);
                 String jsonStr = mapperObj.writeValueAsString(databaseInfo);
-                logger.info("TestQueryCommand::Post::Result::{} " ,jsonStr);
+                if(logger.isDebugEnabled()) {
+                    logger.debug("TestQueryCommand::Post::Result::{} " ,jsonStr);
+                }
                 
                 writer.object();
                 writer.key("code"); 
@@ -99,9 +104,10 @@ public class TestQueryCommand extends DatabaseCommand {
         } catch (Exception e) {
             logger.error("TestQueryCommand::Post::Exception::{}", e);
             throw new ServletException(e);
-        } finally {
-           // ProjectManager.singleton.setBusy(false);
         }
+//        finally {
+//           // ProjectManager.singleton.setBusy(false);
+//        }
 
         
     }

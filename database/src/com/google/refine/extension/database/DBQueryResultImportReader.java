@@ -1,3 +1,31 @@
+/*
+ * Copyright (c) 2017, Tony Opara
+ *        All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ * - Redistributions of source code must retain the above copyright notice, this 
+ *   list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * 
+ * Neither the name of Google nor the names of its contributors may be used to 
+ * endorse or promote products derived from this software without specific 
+ * prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.google.refine.extension.database;
 
 import java.io.IOException;
@@ -16,7 +44,7 @@ import com.google.refine.importing.ImportingJob;
 
 public class DBQueryResultImportReader implements TableDataReader {
     
-    static final Logger logger = LoggerFactory.getLogger("DBQueryResultImportReader");
+    private static final Logger logger = LoggerFactory.getLogger("DBQueryResultImportReader");
 
     private final ImportingJob job;
     private final String querySource;    
@@ -48,7 +76,7 @@ public class DBQueryResultImportReader implements TableDataReader {
         this.dbColumns = columns;
         this.databaseService = databaseService;
         this.dbQueryInfo = dbQueryInfo;
-        logger.info("DBQueryResultImportReader::batchSize:" + batchSize);
+        logger.info("batchSize:" + batchSize);
 
     }
 
@@ -90,12 +118,16 @@ public class DBQueryResultImportReader implements TableDataReader {
                     setProgress(job, querySource, progress++);
                 }
                 if(processedRows % 10000 == 0) {
-                    logger.info("[[ {} rows processed... ]]",processedRows); 
+                    if(logger.isDebugEnabled()) {
+                    logger.debug("[[ {} rows processed... ]]",processedRows); 
+                    }
                 }
             }
             return result;
         } else {
-            logger.info("[[processedRows:{} ]]", processedRows);
+            if(logger.isDebugEnabled()) {
+                logger.debug("[[processedRows:{} ]]", processedRows);
+            }
           return null;
         }
       
@@ -143,16 +175,17 @@ public class DBQueryResultImportReader implements TableDataReader {
                                 rowOfCells.add(Long.parseLong(text));
                                 continue;
                             } catch (NumberFormatException e) {}
-                           
-                            try {
-                                double d = Double.parseDouble(text);
-                                if (!Double.isInfinite(d) && !Double.isNaN(d)) {
-                                    rowOfCells.add(d);
-                                    continue;
-                                }
-                            } catch (NumberFormatException e) {}
-                          
-                        }
+                       
+                         }else if(col.getType() == DatabaseColumnType.DOUBLE || col.getType() == DatabaseColumnType.FLOAT ) {
+                             try {
+                                 double d = Double.parseDouble(text);
+                                 if (!Double.isInfinite(d) && !Double.isNaN(d)) {
+                                     rowOfCells.add(d);
+                                     continue;
+                                 }
+                             } catch (NumberFormatException e) {}
+                             
+                         }
                         
                         rowOfCells.add(text);
                     }

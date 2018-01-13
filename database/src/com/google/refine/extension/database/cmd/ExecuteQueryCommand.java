@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Thomas F. Morris
+ * Copyright (c) 2017, Tony Opara
  *        All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -50,17 +50,19 @@ import com.google.refine.extension.database.model.DatabaseInfo;
 
 public class ExecuteQueryCommand extends DatabaseCommand {
 
-    static final Logger logger = LoggerFactory.getLogger("QueryCommand");
+    private static final Logger logger = LoggerFactory.getLogger("ExecuteQueryCommand");
     
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        logger.info("QueryCommand::Post");
+        
         
         DatabaseConfiguration databaseConfiguration = getJdbcConfiguration(request);
         String query = request.getParameter("queryString");
-        logger.info("QueryCommand::Post::DatabaseConfiguration::{}::Query::{} " ,databaseConfiguration, query);
-        
+        if(logger.isDebugEnabled()) {
+            logger.debug("QueryCommand::Post::DatabaseConfiguration::{}::Query::{} " ,databaseConfiguration, query);
+        }
+       
         //ProjectManager.singleton.setBusy(true);
         try {
            
@@ -76,10 +78,15 @@ public class ExecuteQueryCommand extends DatabaseCommand {
                
                 response.setStatus(HttpStatus.SC_OK);
                 String jsonStr = mapperObj.writeValueAsString(databaseInfo);
-                logger.info("QueryCommand::Post::Result::{} " ,jsonStr);
+                
+                if(logger.isDebugEnabled()) {
+                    logger.debug("QueryCommand::Post::Result::{} " ,jsonStr);
+                }
+                
                 
                 writer.object();
-                writer.key("code"); writer.value("ok");
+                writer.key("code"); 
+                writer.value("ok");
                 writer.key("QueryResult"); 
                 writer.value(jsonStr);
                 writer.endObject();
@@ -98,9 +105,10 @@ public class ExecuteQueryCommand extends DatabaseCommand {
         } catch (Exception e) {
             logger.error("QueryCommand::Post::Exception::{}", e);
             throw new ServletException(e);
-        } finally {
-           // ProjectManager.singleton.setBusy(false);
-        }
+        } 
+//        finally {
+//           // ProjectManager.singleton.setBusy(false);
+//        }
 
         
     }

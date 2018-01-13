@@ -1,4 +1,31 @@
-
+/*
+ * Copyright (c) 2017, Tony Opara
+ *        All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ * - Redistributions of source code must retain the above copyright notice, this 
+ *   list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * 
+ * Neither the name of Google nor the names of its contributors may be used to 
+ * endorse or promote products derived from this software without specific 
+ * prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.google.refine.extension.database;
 
 import java.io.File;
@@ -19,15 +46,24 @@ import com.google.refine.io.FileProjectManager;
 
 public class DatabaseUtils {
     
-    final static Logger logger = LoggerFactory.getLogger("DatabaseUtils");
+    private static final Logger logger = LoggerFactory.getLogger("DatabaseUtils");
     
  
-    private final static String DATABASE_EXTENSION_DIR = "dbextension";
-    private final static String SETTINGS_FILE_NAME = ".saved-db-connections.json";
+    public final static String DATABASE_EXTENSION_DIR = "dbextension";
+    public final static String SETTINGS_FILE_NAME = ".saved-db-connections.json";
     public final static String SAVED_CONNECTION_KEY = "savedConnections";
     
     private static SimpleTextEncryptor textEncryptor = new SimpleTextEncryptor("Aa1Gb@tY7_Y");
     
+    
+    public static int getSavedConnectionsSize() {
+       List<DatabaseConfiguration> scList = getSavedConnections();
+       if(scList == null || scList.isEmpty()) {
+           return 0;
+       }
+       
+       return scList.size();
+    }
     /**
      * GET saved connections
      * @return
@@ -39,7 +75,7 @@ public class DatabaseUtils {
             
             File file = new File(filename);
             if (!file.exists()) {
-                logger.info("saved connections file not found, creating new: {}", filename);
+                //logger.debug("saved connections file not found, creating new: {}", filename);
                 
                 String dirPath = getExtensionFolder(); 
                 File dirFile = new File(dirPath);
@@ -58,7 +94,7 @@ public class DatabaseUtils {
                 }
              
             }
-            logger.info("saved connections file  found {}", filename);
+            //logger.debug("saved connections file  found {}", filename);
             SavedConnectionContainer savedConnectionContainer = mapper.readValue(new File(filename), SavedConnectionContainer.class);
             //return decryptAll(savedConnectionContainer.getSavedConnections());
             return savedConnectionContainer.getSavedConnections();
@@ -83,13 +119,13 @@ public class DatabaseUtils {
      * @return
      */
      public static DatabaseConfiguration getSavedConnection(String connectionName) {
-        logger.info("get saved connection called with connectionName: {}", connectionName);    
+        //logger.debug("get saved connection called with connectionName: {}", connectionName);    
         List<DatabaseConfiguration> savedConfigurations = getSavedConnections();
 
         for (DatabaseConfiguration dc : savedConfigurations) {
-            logger.info("Saved Connection  : {}", dc.getConnectionName()); 
+            //logger.debug("Saved Connection  : {}", dc.getConnectionName()); 
             if (dc.getConnectionName().equalsIgnoreCase(connectionName.trim())) {
-                logger.info("Saved Connection Found : {}", dc);  
+                //logger.debug("Saved Connection Found : {}", dc);  
                 //dc.setDatabasePassword(decrypt(dc.getDatabasePassword()));
                 return dc;
             }
@@ -125,10 +161,6 @@ public class DatabaseUtils {
      public static void addToSavedConnections(DatabaseConfiguration dbConfig){
          
          try {
-          
-//             String encPassword = encrypt(dbConfig.getDatabasePassword());
-//             dbConfig.setDatabasePassword(encPassword);
-             
              ObjectMapper mapper = new ObjectMapper();
              String savedConnectionFile = getExtensionFilePath();
              SavedConnectionContainer savedConnectionContainer = mapper.readValue(new File(savedConnectionFile), SavedConnectionContainer.class);
@@ -138,14 +170,50 @@ public class DatabaseUtils {
              
          } catch (JsonGenerationException e1) {
              logger.error("JsonGenerationException: {}", e1);
-             e1.printStackTrace();
+            // e1.printStackTrace();
          } catch (JsonMappingException e1) {
              logger.error("JsonMappingException: {}", e1);
-             e1.printStackTrace();
+            // e1.printStackTrace();
          } catch (IOException e1) {
              logger.error("IOException: {}", e1);
-             e1.printStackTrace();
+            // e1.printStackTrace();
          }
+     }
+     
+     
+     public static void deleteAllSavedConnections() {
+         logger.info("delete All Saved Connections called...");
+         
+         try {
+             
+             List<DatabaseConfiguration> savedConnections = getSavedConnections();
+             if(logger.isDebugEnabled()) {
+                 logger.debug("Size before delete SavedConnections :: {}", savedConnections.size());
+             }
+            
+             ArrayList<DatabaseConfiguration> newSavedConns = new ArrayList<DatabaseConfiguration>();
+            
+             ObjectMapper mapper = new ObjectMapper();
+             String savedConnectionFile = getExtensionFilePath();
+             SavedConnectionContainer savedConnectionContainer = mapper.readValue(new File(savedConnectionFile), SavedConnectionContainer.class);
+             savedConnectionContainer.setSavedConnections(newSavedConns);
+             
+             if(logger.isDebugEnabled()) {
+                 logger.debug("Size after delete SavedConnections :: {}", savedConnectionContainer.getSavedConnections().size());
+             }
+             mapper.writerWithDefaultPrettyPrinter().writeValue(new File(savedConnectionFile), savedConnectionContainer);
+             
+         } catch (JsonGenerationException e1) {
+             logger.error("JsonGenerationException: {}", e1);
+            // e1.printStackTrace();
+         } catch (JsonMappingException e1) {
+             logger.error("JsonMappingException: {}", e1);
+            // e1.printStackTrace();
+         } catch (IOException e1) {
+             logger.error("IOException: {}", e1);
+            // e1.printStackTrace();
+         }
+         
      }
      
      /**
@@ -154,13 +222,15 @@ public class DatabaseUtils {
       */
      public static void deleteSavedConnections(String connectionName) {
          
-         logger.info("deleteSavedConnections called with: {}", connectionName);
+        logger.info("deleteSavedConnections called with: {}", connectionName);
          
         try {
             
-             List<DatabaseConfiguration> savedConnections = getSavedConnections();
-             logger.info("Size before delete SavedConnections :: {}", savedConnections.size());
-             
+             List<DatabaseConfiguration> savedConnections = getSavedConnections();;
+             if(logger.isDebugEnabled()) {
+                 logger.debug("Size before delete SavedConnections :: {}", savedConnections.size());
+             }
+            
              ArrayList<DatabaseConfiguration> newSavedConns = new ArrayList<DatabaseConfiguration>();
              for(DatabaseConfiguration dc: savedConnections) {
                  if(!dc.getConnectionName().equalsIgnoreCase(connectionName.trim())) {
@@ -174,18 +244,20 @@ public class DatabaseUtils {
              SavedConnectionContainer savedConnectionContainer = mapper.readValue(new File(savedConnectionFile), SavedConnectionContainer.class);
              savedConnectionContainer.setSavedConnections(newSavedConns);
              
-             logger.info("Size after delete SavedConnections :: {}", savedConnectionContainer.getSavedConnections().size());
+             if(logger.isDebugEnabled()) {
+                 logger.debug("Size after delete SavedConnections :: {}", savedConnectionContainer.getSavedConnections().size());
+             }
              mapper.writerWithDefaultPrettyPrinter().writeValue(new File(savedConnectionFile), savedConnectionContainer);
              
          } catch (JsonGenerationException e1) {
              logger.error("JsonGenerationException: {}", e1);
-             e1.printStackTrace();
+            // e1.printStackTrace();
          } catch (JsonMappingException e1) {
              logger.error("JsonMappingException: {}", e1);
-             e1.printStackTrace();
+           //  e1.printStackTrace();
          } catch (IOException e1) {
              logger.error("IOException: {}", e1);
-             e1.printStackTrace();
+            // e1.printStackTrace();
          }
      }
     
@@ -194,9 +266,11 @@ public class DatabaseUtils {
       * @param jdbcConfig
       */
      public static void editSavedConnections(DatabaseConfiguration jdbcConfig) {
-         logger.info("Edit SavedConnections called with: {}", jdbcConfig);
+         if(logger.isDebugEnabled()) {
+             logger.debug("Edit SavedConnections called with: {}", jdbcConfig); 
+         }
          
-         
+       
          try {
              ObjectMapper mapper = new ObjectMapper();
              String savedConnectionFile = getExtensionFilePath();
@@ -236,6 +310,8 @@ public class DatabaseUtils {
         File dir = ((FileProjectManager) ProjectManager.singleton).getWorkspaceDir();
         String fileSep = System.getProperty("file.separator"); 
         String filename = dir.getPath() + fileSep + DATABASE_EXTENSION_DIR + fileSep + SETTINGS_FILE_NAME;
+        
+       // logger.info("** extension file name: {} **", filename);
         return filename;
     }
     public static String getExtensionFolder(){
@@ -245,17 +321,17 @@ public class DatabaseUtils {
         return filename;
     }
 
-    public static DatabaseColumnType getDbColumnType(int dbType) {
+    public static DatabaseColumnType getDbColumnType(int dbColumnType) {
 
-        switch (dbType) {
+        switch (dbColumnType) {
         case java.sql.Types.BIGINT:
             return DatabaseColumnType.NUMBER;
         case java.sql.Types.FLOAT:
-            return DatabaseColumnType.STRING;
+            return DatabaseColumnType.FLOAT;
         case java.sql.Types.REAL:
-            return DatabaseColumnType.STRING;
+            return DatabaseColumnType.DOUBLE;
         case java.sql.Types.DOUBLE:
-            return DatabaseColumnType.STRING;
+            return DatabaseColumnType.DOUBLE;
         case java.sql.Types.NUMERIC:
             return DatabaseColumnType.NUMBER;
         case java.sql.Types.DECIMAL:
@@ -267,7 +343,7 @@ public class DatabaseUtils {
         case java.sql.Types.LONGVARCHAR:
             return DatabaseColumnType.STRING;
         case java.sql.Types.DATE:
-            return DatabaseColumnType.DATETIME;
+            return DatabaseColumnType.DATE;
         case java.sql.Types.TIME:
             return DatabaseColumnType.DATETIME;
         case java.sql.Types.TIMESTAMP:
@@ -296,6 +372,11 @@ public class DatabaseUtils {
             return DatabaseColumnType.STRING;
         case java.sql.Types.REF:
             return DatabaseColumnType.STRING;
+        case java.sql.Types.BOOLEAN:
+            return DatabaseColumnType.BOOLEAN;
+        case java.sql.Types.INTEGER:
+            return DatabaseColumnType.NUMBER;
+            
         default:
             return DatabaseColumnType.STRING;
         }

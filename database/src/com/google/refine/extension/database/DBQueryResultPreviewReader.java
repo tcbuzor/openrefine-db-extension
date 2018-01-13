@@ -1,3 +1,31 @@
+/*
+ * Copyright (c) 2017, Tony Opara
+ *        All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are met:
+ * - Redistributions of source code must retain the above copyright notice, this 
+ *   list of conditions and the following disclaimer.
+ * - Redistributions in binary form must reproduce the above copyright notice, 
+ *   this list of conditions and the following disclaimer in the documentation 
+ *   and/or other materials provided with the distribution.
+ * 
+ * Neither the name of Google nor the names of its contributors may be used to 
+ * endorse or promote products derived from this software without specific 
+ * prior written permission.
+ * 
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, 
+ * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR 
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR 
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, 
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, 
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, 
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR 
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF 
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.google.refine.extension.database;
 
 import java.io.IOException;
@@ -16,7 +44,7 @@ import com.google.refine.importing.ImportingJob;
 
 public class DBQueryResultPreviewReader implements TableDataReader {
     
-    static final Logger logger = LoggerFactory.getLogger("DBQueryResultPreviewReader");
+    private static final Logger logger = LoggerFactory.getLogger("DBQueryResultPreviewReader");
 
     private final ImportingJob job;
     private final String querySource;    
@@ -46,7 +74,7 @@ public class DBQueryResultPreviewReader implements TableDataReader {
         this.dbColumns = columns;
         this.databaseService = databaseService;
         this.dbQueryInfo = dbQueryInfo;
-        logger.info("DBQueryResultPreviewReader::batchSize:" + batchSize);
+        logger.debug("DBQueryResultPreviewReader::batchSize:" + batchSize);
 
     }
 
@@ -63,7 +91,7 @@ public class DBQueryResultPreviewReader implements TableDataReader {
                 row.add(cd.getName());
             }
             usedHeaders = true;
-            logger.info("Exit::getNextRowOfCells return header::row:" +  row);
+           // logger.debug("Exit::getNextRowOfCells return header::row:" +  row);
             return row;
         }
         
@@ -79,23 +107,21 @@ public class DBQueryResultPreviewReader implements TableDataReader {
             //logger.info("Exit::getNextRowOfCells :rowsOfCellsNotNull::rowsOfCells size:" + rowsOfCells.size() + ":batchRowStart:" + batchRowStart + " ::nextRow:" + nextRow);
             return rowsOfCells.get(nextRow++ - batchRowStart);
         } else {
-            logger.info("nextRow:{}, batchRowStart:{}", nextRow, batchRowStart);
-//            
-//            rowsOfCells = getRowsOfCells(batchRowStart);
-//            if(rowsOfCells != null) {
-//                return rowsOfCells.get(nextRow++ - batchRowStart);
-//            }
+            if(logger.isDebugEnabled()) {
+                logger.debug("nextRow:{}, batchRowStart:{}", nextRow, batchRowStart);
+            }
+
             return null;
         }
       
         
       }catch(DatabaseServiceException e) {
-          logger.error("DatabaseServiceException::{}", e);
-          throw new IOException(e);
+          logger.error("DatabaseServiceException::preview:{}", e.getMessage());
+          IOException ioEx = new IOException(e.getMessage(), e);
+          throw ioEx;
           
       }
-      
-     
+  
    }
     
     /**
@@ -111,7 +137,9 @@ public class DBQueryResultPreviewReader implements TableDataReader {
         List<List<Object>> rowsOfCells = new ArrayList<List<Object>>(batchSize);
         
         String query = databaseService.buildLimitQuery(batchSize, startRow, dbQueryInfo.getQuery());
-        logger.info("batchSize::"  + batchSize +  " startRow::" + startRow + " query::" + query );
+        if(logger.isDebugEnabled()) {
+            logger.debug("batchSize::"  + batchSize +  " startRow::" + startRow + " query::" + query );
+        }
         
         List<DatabaseRow> dbRows = databaseService.getRows(dbQueryInfo.getDbConfig(), query);
 
@@ -132,20 +160,18 @@ public class DBQueryResultPreviewReader implements TableDataReader {
                             try {
                                 rowOfCells.add(Long.parseLong(text));
                                 continue;
-                            } catch (NumberFormatException e) {
-                                // ignore
-                            }
-                            
-                            try {
-                                double d = Double.parseDouble(text);
-                                if (!Double.isInfinite(d) && !Double.isNaN(d)) {
-                                    rowOfCells.add(d);
-                                    continue;
-                                }
-                            } catch (NumberFormatException e) {
-                                // ignore
-                            }
-                        }
+                            } catch (NumberFormatException e) {}
+                       
+                         }else if(col.getType() == DatabaseColumnType.DOUBLE || col.getType() == DatabaseColumnType.FLOAT ) {
+                             try {
+                                 double d = Double.parseDouble(text);
+                                 if (!Double.isInfinite(d) && !Double.isNaN(d)) {
+                                     rowOfCells.add(d);
+                                     continue;
+                                 }
+                             } catch (NumberFormatException e) {}
+                             
+                         }
                         
                         rowOfCells.add(text);
                     }

@@ -23,8 +23,7 @@ import com.google.refine.extension.database.DatabaseService;
 import com.google.refine.extension.database.mysql.MySQLDatabaseService;
 
 
-
-public class TestConnectCommandTest extends DBExtensionTests{
+public class ExecuteQueryCommandTest extends DBExtensionTests {
     
     @Mock
     private HttpServletRequest request;
@@ -32,8 +31,9 @@ public class TestConnectCommandTest extends DBExtensionTests{
     @Mock
     private HttpServletResponse response;
 
+  
     private DatabaseConfiguration testDbConfig;
-    // private String testTable;
+    private String testTable;
    
   
      @BeforeTest
@@ -43,7 +43,6 @@ public class TestConnectCommandTest extends DBExtensionTests{
             @Optional(DEFAULT_MYSQL_PASSWORD)  String mySqlDbPassword, @Optional(DEFAULT_TEST_TABLE)  String mySqlTestTable) {
         
          MockitoAnnotations.initMocks(this);
-       
          testDbConfig = new DatabaseConfiguration();
          testDbConfig.setDatabaseHost(mySqlDbHost);
          testDbConfig.setDatabaseName(mySqlDbName);
@@ -53,28 +52,30 @@ public class TestConnectCommandTest extends DBExtensionTests{
          testDbConfig.setDatabaseUser(mySqlDbUser);
          testDbConfig.setUseSSL(false);
          
-         //testTable = mySqlTestTable;
+         testTable = mySqlTestTable;
         // DBExtensionTestUtils.initTestData(testDbConfig);
          
          DatabaseService.DBType.registerDatabase(MySQLDatabaseService.DB_NAME, MySQLDatabaseService.getInstance());
          
      }
-     
-//     @AfterSuite
-//     public void afterSuite() {
-//         DBExtensionTestUtils.cleanUpTestData(testDbConfig);
-//        
-//     }
-     
+//    
+//    @AfterSuite
+//    public void afterSuite() {
+//        DBExtensionTestUtils.cleanUpTestData(testDbConfig);
+//      
+//    }
+    
+
     @Test
     public void testDoPost() {
-        
-        when(request.getParameter("databaseType")).thenReturn(MySQLDatabaseService.DB_NAME);
+
+        when(request.getParameter("databaseType")).thenReturn(testDbConfig.getDatabaseType());
         when(request.getParameter("databaseServer")).thenReturn(testDbConfig.getDatabaseHost());
         when(request.getParameter("databasePort")).thenReturn("" + testDbConfig.getDatabasePort());
         when(request.getParameter("databaseUser")).thenReturn(testDbConfig.getDatabaseUser());
         when(request.getParameter("databasePassword")).thenReturn(testDbConfig.getDatabasePassword());
         when(request.getParameter("initialDatabase")).thenReturn(testDbConfig.getDatabaseName());
+        when(request.getParameter("queryString")).thenReturn("SELECT count(*) FROM " + testTable);
         
 
         StringWriter sw = new StringWriter();
@@ -83,9 +84,9 @@ public class TestConnectCommandTest extends DBExtensionTests{
 
         try {
             when(response.getWriter()).thenReturn(pw);
-            TestConnectCommand connectCommand = new TestConnectCommand();
+            ExecuteQueryCommand executeQueryCommand = new ExecuteQueryCommand();
            
-            connectCommand.doPost(request, response);
+            executeQueryCommand.doPost(request, response);
             
             String result = sw.getBuffer().toString().trim();
             JSONObject json = new JSONObject(result);
@@ -93,12 +94,14 @@ public class TestConnectCommandTest extends DBExtensionTests{
             String code = json.getString("code");
             Assert.assertEquals(code, "ok");
 
+            String queryResult = json.getString("QueryResult");
+            Assert.assertNotNull(queryResult);
         
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } 
-      
+
     }
 
 }

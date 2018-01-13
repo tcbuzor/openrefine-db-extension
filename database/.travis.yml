@@ -1,0 +1,21 @@
+language: java
+
+jdk:
+  - oraclejdk8
+  
+addons:
+  mariadb: '10.0'
+  
+services:
+  - mysql
+  - postgresql
+  - mariadb
+
+before_install:
+  - mysql -u root --password="" < test/conf/travis-mysql.sql
+  - psql -u postgres --password="" < test/conf/travis-pgsql.sql
+  - mysql -u root --password="" < test/conf/travis-mariadb.sql
+    
+script:
+  - ant test
+ 

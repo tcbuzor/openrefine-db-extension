@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2011, Thomas F. Morris
+ * Copyright (c) 2017, Tony Opara
  *        All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without 
@@ -48,15 +48,18 @@ import com.google.refine.extension.database.DatabaseServiceException;
 
 public class TestConnectCommand extends DatabaseCommand {
 
-    static final Logger logger = LoggerFactory.getLogger("TestConnectCommand");
+    private static final Logger logger = LoggerFactory.getLogger("TestConnectCommand");
 
     @Override
     public void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        logger.info("TestConnectCommand::Post");
+        
         DatabaseConfiguration databaseConfiguration = getJdbcConfiguration(request);
-        logger.info("TestConnectCommand::Post::{}", databaseConfiguration);
+        if(logger.isDebugEnabled()) {
+            logger.debug("TestConnectCommand::Post::{}", databaseConfiguration); 
+        }
+        
         
         //ProjectManager.singleton.setBusy(true);
         try {
