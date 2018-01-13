@@ -1,24 +1,21 @@
-
-OpenRefine Database Extension
-
-This project is an extension for OpenRefine that provides a way to import data from a sql database using JDBC.
+This project is an extension for OpenRefine that provides a way to import database data using JDBC.
 
 
 INSTALL
 
-1. Before installing this extension download Google Refine code from http://code.google.com/p/google-refine/source/checkout. 
+1. Before installing this extension download OpenRefine code from http://code.google.com/p/google-refine/source/checkout. 
 
 2. Pull this extension's code into folder database under folder /extensions. 
-For more information on how to write a Google Refine extensions and where to put the files see http://code.google.com/p/google-refine/wiki/WriteAnExtension
+For more information on how to write a OpenRefine extensions and where to put the files see http://code.google.com/p/google-refine/wiki/WriteAnExtension
 
 The folder structure should resemble this:
-* OpenRefine/
-  * /extensions
-    * /database
-      * /module
-      * /src
-      * build.xml
-      * README (this file)
+grefine-all/
+----------/extensions
+--------------/database
+------------------/module
+------------------/src
+------------------build.xml
+------------------README (this file)
 
 3. Update build.xml in folder /extensions with build and clean ant tasks for database:
 
@@ -42,4 +39,3 @@ The folder structure should resemble this:
 </project>
 
 4. If using Eclipse, make sure that you build project with ant
-
