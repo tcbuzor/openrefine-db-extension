@@ -17,7 +17,7 @@ before_install:
   - mysql -u root test_db < test/conf/travis-mysql.sql
 
   - psql -c 'CREATE DATABASE test_db;' -U postgres
-  - psql -u postgres --password="" < test/conf/travis-pgsql.sql
+  - psql -U postgres test_db < test/conf/travis-pgsql.sql
   
     
 script:
